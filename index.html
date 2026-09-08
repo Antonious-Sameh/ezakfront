@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+		<title>لوحة تحكم المحلات — System 5</title>
+		<meta name="description" content="لوحة تحكم مركزية للقراءة فقط لمتابعة مبيعات ومخزون وتقارير جميع المحلات" />
+
+		<!-- Favicons -->
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+		<!-- Theme color (Android/Chrome address bar, installed PWA title bar) —
+		     matches the app shell's light background (AppLayout.jsx) -->
+		<meta name="theme-color" content="#f7f2f3" />
+		<meta name="color-scheme" content="light dark" />
+
+		<!-- iOS/iPadOS home-screen install behavior -->
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta name="apple-mobile-web-app-title" content="لوحة التحكم" />
+
+		<!-- Modern (non-WebKit-prefixed) standalone-display hint -->
+		<meta name="mobile-web-app-capable" content="yes" />
+
+		<!-- Customer/supplier phone numbers appear throughout — don't let iOS
+		     auto-style them as tel: links -->
+		<meta name="format-detection" content="telephone=no" />
+
+		<!-- Windows tile color (legacy, negligible cost to include) -->
+		<meta name="msapplication-TileColor" content="#582243" />
+	</head>
+	<body>
+		<div id="root"></div>
+		<script type="module" src="/src/main.jsx"></script>
+	</body>
+</html>

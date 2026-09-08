@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+/*
+  ---break---
+*/
+
+@layer base {
+  :root {
+    --background: 350 24% 96%;
+    --foreground: 325 30% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 325 30% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 325 30% 12%;
+    --primary: 324 44% 24%;
+    --primary-foreground: 350 30% 96%;
+    --secondary: 340 20% 90%;
+    --secondary-foreground: 325 30% 15%;
+    --muted: 340 18% 91%;
+    --muted-foreground: 330 10% 40%;
+    --accent: 22 55% 42%;
+    --accent-foreground: 30 40% 96%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 335 16% 84%;
+    --input: 335 16% 84%;
+    --ring: 324 44% 24%;
+    --radius: 0.375rem;
+    --sidebar-background: 324 44% 18%;
+    --sidebar-foreground: 350 24% 88%;
+    --sidebar-primary: 22 55% 50%;
+    --sidebar-primary-foreground: 30 40% 96%;
+    --sidebar-accent: 324 35% 26%;
+    --sidebar-accent-foreground: 350 30% 96%;
+    --sidebar-border: 324 30% 28%;
+    --sidebar-ring: 22 55% 50%;
+  }
+  .dark {
+    --background: 325 25% 8%;
+    --foreground: 350 24% 92%;
+    --card: 325 22% 11%;
+    --card-foreground: 350 24% 92%;
+    --popover: 325 22% 11%;
+    --popover-foreground: 350 24% 92%;
+    --primary: 350 30% 90%;
+    --primary-foreground: 324 44% 18%;
+    --secondary: 325 15% 18%;
+    --secondary-foreground: 350 24% 92%;
+    --muted: 325 15% 18%;
+    --muted-foreground: 335 12% 62%;
+    --accent: 22 55% 55%;
+    --accent-foreground: 325 25% 8%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 325 14% 20%;
+    --input: 325 14% 20%;
+    --ring: 22 55% 55%;
+    --sidebar-background: 325 25% 6%;
+    --sidebar-foreground: 350 24% 88%;
+    --sidebar-primary: 22 55% 50%;
+    --sidebar-primary-foreground: 30 40% 96%;
+    --sidebar-accent: 325 15% 18%;
+    --sidebar-accent-foreground: 350 24% 92%;
+    --sidebar-border: 325 14% 20%;
+    --sidebar-ring: 22 55% 55%;
+  }
+}
