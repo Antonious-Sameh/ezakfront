@@ -54,7 +54,7 @@ function SummaryItem({ label, value, tone }) {
 	return (
 		<div className="rounded-lg border border-border bg-card p-3 sm:p-4">
 			<p className="text-[11px] font-semibold text-muted-foreground">{label}</p>
-			<p className={`mt-1 font-display text-xl font-extrabold tabular-nums ${tones[tone] || 'text-foreground'}`}>{value}</p>
+			<p className={`mt-1 font-display text-xl font-bold tabular-nums ${tones[tone] || 'text-foreground'}`}>{value}</p>
 		</div>
 	);
 }

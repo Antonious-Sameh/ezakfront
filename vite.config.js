@@ -24,13 +24,13 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'any',
-        // Matches the login page's full-screen background (bg-primary,
+        // Matches the login page's full-screen ink background (bg-primary,
         // see LoginPage.jsx) so standalone launch has no flash of a
         // different color before the app shell mounts.
-        background_color: '#582243',
-        // Matches the authenticated app shell's light background — where
-        // most real usage time is spent (see AppLayout.jsx).
-        theme_color: '#f7f2f3',
+        background_color: '#231f1a',
+        // Matches the authenticated app shell's warm paper background —
+        // where most real usage time is spent (see index.css).
+        theme_color: '#f6f4ef',
         icons: [
           { src: '/icons/icon-72.png', sizes: '72x72', type: 'image/png', purpose: 'any' },
           { src: '/icons/icon-96.png', sizes: '96x96', type: 'image/png', purpose: 'any' },

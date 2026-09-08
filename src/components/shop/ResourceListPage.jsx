@@ -86,7 +86,7 @@ export default function ResourceListPage({ shopId, config, summaryNode }) {
 					<Icon className="h-5 w-5" strokeWidth={1.75} />
 				</span>
 				<div>
-					<h1 className="font-display text-lg font-bold text-foreground sm:text-xl">{title}</h1>
+					<h1 className="font-display text-lg font-semibold text-foreground sm:text-xl">{title}</h1>
 					<p className="text-xs text-muted-foreground">{subtitle}</p>
 				</div>
 			</header>
@@ -120,14 +120,14 @@ export default function ResourceListPage({ shopId, config, summaryNode }) {
 			) : (
 				<>
 					{/* Desktop table */}
-					<div className="hidden overflow-hidden rounded-lg border border-border bg-card md:block">
+					<div className="hidden overflow-hidden rounded-sm border border-border bg-card md:block">
 						<table className="w-full text-sm">
-							<thead className="bg-muted text-xs text-muted-foreground">
-								<tr>
+							<thead>
+								<tr className="border-b border-border">
 									{columns.map((col) => (
 										<th
 											key={col.key}
-											className={`whitespace-nowrap px-4 py-3 font-semibold ${col.align === 'end' ? 'text-end' : 'text-start'}`}
+											className={`whitespace-nowrap px-4 py-3 text-xs font-semibold text-muted-foreground ${col.align === 'end' ? 'text-end' : 'text-start'}`}
 										>
 											{col.label}
 										</th>
@@ -162,7 +162,7 @@ export default function ResourceListPage({ shopId, config, summaryNode }) {
 								key={row.id}
 								type="button"
 								onClick={() => openDetail(row.id)}
-								className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4 text-start transition hover:border-primary/40 active:scale-[0.99]"
+								className="flex flex-col gap-2 rounded-sm border border-border bg-card p-4 text-start transition hover:border-accent/50 active:scale-[0.99]"
 							>
 								<div className="flex items-center justify-between gap-2">
 									<span className="font-display text-sm font-bold text-foreground">
@@ -224,12 +224,12 @@ function trailingValue(row, columns) {
 	if (!key) return null;
 	const col = columns.find((c) => c.key === key);
 	const val = renderCol(col, row);
-	return <span className="font-display text-sm font-extrabold tabular-nums text-foreground">{val}</span>;
+	return <span className="font-display text-sm font-bold tabular-nums text-foreground">{val}</span>;
 }
 
 function ListSkeleton({ columns }) {
 	return (
-		<div className="hidden overflow-hidden rounded-lg border border-border bg-card md:block">
+		<div className="hidden overflow-hidden rounded-sm border border-border bg-card md:block">
 			<table className="w-full text-sm">
 				<tbody className="divide-y divide-border">
 					{Array.from({ length: 6 }).map((_, r) => (

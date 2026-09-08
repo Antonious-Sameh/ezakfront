@@ -1,11 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Store } from 'lucide-react';
+import { ChevronLeft, Package } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 
 const AR_LOCALE = 'ar-EG';
 
-/** One shop summary card on the overview page. Whole card links to the shop page. */
+/**
+ * One shop's row in the overview ledger. Deliberately a full-width row in a
+ * bordered list (see OverviewPage.jsx), not a standalone rounded card with
+ * its own shadow — reads as entries in one account statement rather than a
+ * shelf of identical tiles.
+ */
 export default function ShopCard({ shop, index }) {
 	const isOnline = shop.status === 'online';
 	const hasLowStock = Number(shop.lowStockCount) > 0;
@@ -13,74 +18,65 @@ export default function ShopCard({ shop, index }) {
 	return (
 		<Link
 			to={`/shops/${shop.id}`}
-			className="group flex h-full flex-col rounded-lg border border-border bg-card p-5 shadow-[inset_0_2px_10px_hsl(var(--primary)/0.05)] transition hover:border-primary/50 hover:shadow-[inset_0_2px_10px_hsl(var(--primary)/0.08)] active:scale-[0.98]"
+			className={`group flex flex-col gap-3 border-s-4 bg-card px-5 py-5 transition hover:bg-accent/[0.05] sm:flex-row sm:items-center sm:gap-6 sm:px-7 ${
+				isOnline ? 'border-s-emerald-800/70' : 'border-s-muted-foreground/30'
+			}`}
 		>
-			<div className="flex items-start justify-between gap-3">
-				<div className="flex items-center gap-3">
-					{shop.logoUrl ? (
-						<img
-							src={shop.logoUrl}
-							alt={`لوجو ${shop.name}`}
-							className="h-12 w-12 rounded-md border border-border object-cover"
-							loading="lazy"
-						/>
-					) : (
-						<span className="grid h-12 w-12 place-items-center rounded-md bg-primary/10 text-primary">
-							<Store className="h-6 w-6" strokeWidth={1.75} />
-						</span>
-					)}
-					<div className="leading-tight">
-						<p className="text-[11px] font-semibold text-muted-foreground">
-							محل {formatNumber(index + 1, { locale: AR_LOCALE })}
-						</p>
-						<h3 className="font-display text-base font-bold text-foreground">{shop.name}</h3>
-					</div>
+			<div className="flex min-w-0 flex-1 items-center gap-4">
+				<span className="hidden w-6 shrink-0 text-sm font-semibold tabular-nums text-muted-foreground/60 sm:block">
+					{formatNumber(index + 1, { locale: AR_LOCALE })}
+				</span>
+				<div className="min-w-0 leading-tight">
+					<h3 className="truncate font-display text-lg font-semibold text-foreground">{shop.name}</h3>
+					<p className="mt-1 flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground">
+						<span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isOnline ? 'bg-emerald-700' : 'bg-zinc-400'}`} aria-hidden="true" />
+						{isOnline ? 'متصل' : 'غير متصل'}
+					</p>
 				</div>
-				<span className="flex shrink-0 items-center gap-1.5 pt-1 text-[11px] font-semibold text-muted-foreground">
-					<span
-						className={`h-2.5 w-2.5 rounded-full ${isOnline ? 'bg-emerald-600' : 'bg-zinc-400'}`}
-						aria-hidden="true"
-					/>
-					{isOnline ? 'متصل' : 'غير متصل'}
-				</span>
 			</div>
 
-			<div className="mt-5 flex-1">
-				<p className="text-xs text-muted-foreground">مبيعات اليوم</p>
-				<p className="mt-1 font-display text-2xl font-extrabold tabular-nums text-foreground">
-					{formatNumber(shop.todaySales, { locale: AR_LOCALE })}
-				</p>
-			</div>
+			<div className="flex items-center justify-between gap-4 sm:justify-end sm:gap-10">
+				{hasLowStock ? (
+					<span className="inline-flex shrink-0 items-center gap-1.5 rounded-sm bg-destructive/10 px-2.5 py-1.5 text-xs font-semibold text-destructive">
+						<Package className="h-3.5 w-3.5" strokeWidth={2} />
+						{formatNumber(shop.lowStockCount, { locale: AR_LOCALE })} ناقص
+					</span>
+				) : (
+					<span className="hidden shrink-0 text-xs font-semibold text-muted-foreground/50 sm:inline">المخزون كويس</span>
+				)}
 
-			{hasLowStock ? (
-				<span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-sm bg-accent/10 px-2.5 py-1.5 text-xs font-semibold text-accent">
-					<Package className="h-4 w-4" strokeWidth={2} />
-					{formatNumber(shop.lowStockCount, { locale: AR_LOCALE })} منتجات ناقصة
-				</span>
-			) : (
-				<span className="mt-4 inline-flex w-fit items-center rounded-sm bg-muted px-2.5 py-1.5 text-xs font-semibold text-muted-foreground">
-					المخزون كويس
-				</span>
-			)}
+				<div className="text-end leading-tight">
+					<p className="text-[11px] text-muted-foreground">مبيعات اليوم</p>
+					<p className="mt-0.5 font-display text-xl font-semibold tabular-nums text-foreground sm:text-2xl">
+						{formatNumber(shop.todaySales, { locale: AR_LOCALE })}
+					</p>
+				</div>
+
+				<ChevronLeft
+					className="hidden h-5 w-5 shrink-0 text-muted-foreground/40 transition group-hover:-translate-x-0.5 group-hover:text-accent sm:block"
+					strokeWidth={2}
+				/>
+			</div>
 		</Link>
 	);
 }
 
 export function ShopCardSkeleton() {
 	return (
-		<div className="flex h-full flex-col rounded-lg border border-border bg-card p-5">
-			<div className="flex items-center gap-3">
-				<div className="h-12 w-12 animate-pulse rounded-md bg-muted" />
-				<div className="flex-1 space-y-2">
+		<div className="flex flex-col gap-3 border-s-4 border-s-muted bg-card px-5 py-5 sm:flex-row sm:items-center sm:gap-6 sm:px-7">
+			<div className="flex flex-1 items-center gap-4">
+				<div className="h-4 w-4 animate-pulse rounded bg-muted" />
+				<div className="space-y-2">
+					<div className="h-4 w-32 animate-pulse rounded bg-muted" />
 					<div className="h-3 w-16 animate-pulse rounded bg-muted" />
-					<div className="h-4 w-28 animate-pulse rounded bg-muted" />
 				</div>
 			</div>
-			<div className="mt-5 space-y-2">
-				<div className="h-3 w-20 animate-pulse rounded bg-muted" />
-				<div className="h-7 w-32 animate-pulse rounded bg-muted" />
+			<div className="flex items-center gap-8">
+				<div className="space-y-2 text-end">
+					<div className="h-3 w-16 animate-pulse rounded bg-muted" />
+					<div className="h-6 w-24 animate-pulse rounded bg-muted" />
+				</div>
 			</div>
-			<div className="mt-4 h-7 w-28 animate-pulse rounded-sm bg-muted" />
 		</div>
 	);
 }

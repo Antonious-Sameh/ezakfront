@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { NavLink, Outlet, useParams } from 'react-router-dom';
-import { ArrowRight, Check, ChevronDown, Home, MoreHorizontal, Store } from 'lucide-react';
+import { ArrowRight, Check, ChevronDown, Home, MoreHorizontal, Landmark } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
@@ -18,11 +18,11 @@ function ShopSwitcher({ shops, currentId }) {
 				onClick={() => setOpen((v) => !v)}
 				aria-haspopup="listbox"
 				aria-expanded={open}
-				className="inline-flex min-h-11 max-w-[60vw] items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-bold text-foreground transition hover:border-primary/40 active:scale-[0.98]"
+				className="inline-flex min-h-11 max-w-[60vw] items-center gap-2 rounded-sm border border-primary-foreground/20 bg-primary-foreground/5 px-3 py-2 text-sm font-bold text-primary-foreground transition hover:border-accent/50 active:scale-[0.98]"
 			>
-				<Store className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />
+				<Landmark className="h-4 w-4 shrink-0 text-accent" strokeWidth={1.75} />
 				<span className="truncate">{current?.name || 'المحل'}</span>
-				<ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2} />
+				<ChevronDown className="h-4 w-4 shrink-0 text-primary-foreground/50" strokeWidth={2} />
 			</button>
 
 			{open ? (
@@ -35,7 +35,7 @@ function ShopSwitcher({ shops, currentId }) {
 					/>
 					<ul
 						role="listbox"
-						className="absolute start-0 z-50 mt-1 max-h-72 w-64 overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-xl"
+						className="absolute start-0 z-50 mt-1 max-h-72 w-64 overflow-y-auto rounded-sm border border-border bg-popover p-1 shadow-xl"
 					>
 						{shops.map((shop) => (
 							<li key={shop.id}>
@@ -45,10 +45,10 @@ function ShopSwitcher({ shops, currentId }) {
 									className="flex items-center justify-between gap-2 rounded-sm px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted"
 								>
 									<span className="flex items-center gap-2 truncate">
-										<span className={`h-2 w-2 shrink-0 rounded-full ${shop.status === 'online' ? 'bg-emerald-600' : 'bg-zinc-400'}`} />
+										<span className={`h-2 w-2 shrink-0 rounded-full ${shop.status === 'online' ? 'bg-emerald-700' : 'bg-zinc-400'}`} />
 										<span className="truncate">{shop.name}</span>
 									</span>
-									{shop.id === currentId ? <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={2} /> : null}
+									{shop.id === currentId ? <Check className="h-4 w-4 shrink-0 text-accent" strokeWidth={2} /> : null}
 								</NavLink>
 							</li>
 						))}
@@ -75,15 +75,15 @@ export default function ShopLayout() {
 
 	return (
 		<div className="min-h-dvh bg-background text-foreground">
-			{/* Sticky shop header */}
-			<header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
+			{/* Sticky shop header — ink chrome */}
+			<header className="sticky top-0 z-40 border-b border-primary-foreground/10 bg-primary text-primary-foreground">
 				<div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:px-6">
 					<div className="flex min-w-0 items-center gap-2">
-						{shops?.length ? <ShopSwitcher shops={shops} currentId={shopId} /> : <span className="text-sm font-bold">جارٍ التحميل…</span>}
+						{shops?.length ? <ShopSwitcher shops={shops} currentId={shopId} /> : <span className="text-sm font-bold text-primary-foreground/60">جارٍ التحميل…</span>}
 					</div>
 					<NavLink
 						to="/"
-						className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition hover:border-primary/40 active:scale-[0.98] sm:px-4"
+						className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-sm border border-primary-foreground/20 bg-primary-foreground/5 px-3 py-2 text-sm font-semibold text-primary-foreground transition hover:border-accent/50 active:scale-[0.98] sm:px-4"
 					>
 						<ArrowRight className="h-4 w-4" strokeWidth={2} />
 						<span className="hidden sm:inline">رجوع للرئيسية</span>
@@ -93,18 +93,18 @@ export default function ShopLayout() {
 			</header>
 
 			<div className="mx-auto flex w-full max-w-6xl items-start gap-6 px-4 sm:px-6">
-				{/* Desktop sidebar: all sections */}
+				{/* Desktop sidebar: all sections — ink, matching the header */}
 				<aside className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-60 shrink-0 overflow-y-auto py-6 md:block">
-					<nav className="flex flex-col gap-1 rounded-lg border border-border bg-card p-2 shadow-[inset_0_2px_10px_hsl(var(--primary)/0.05)]">
-						<p className="px-3 pb-2 pt-1 text-[11px] font-semibold text-muted-foreground">أقسام المحل</p>
+					<nav className="flex flex-col gap-1 rounded-sm border border-primary/10 bg-primary p-2">
+						<p className="px-3 pb-2 pt-1 text-[11px] font-semibold text-primary-foreground/45">أقسام المحل</p>
 						{SHOP_SECTIONS.map((item) => (
 							<NavLink
 								key={item.key || 'overview'}
 								to={sectionPath(shopId, item.key)}
 								end={item.key === ''}
 								className={({ isActive }) =>
-									`flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition active:scale-[0.98] ${
-										isActive ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted'
+									`flex min-h-11 items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-semibold transition active:scale-[0.98] ${
+										isActive ? 'bg-accent text-accent-foreground' : 'text-primary-foreground/75 hover:bg-primary-foreground/10 hover:text-primary-foreground'
 									}`
 								}
 							>
@@ -120,8 +120,8 @@ export default function ShopLayout() {
 				</main>
 			</div>
 
-			{/* Mobile bottom tab bar: primary sections + "المزيد" */}
-			<nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+			{/* Mobile bottom tab bar: primary sections + "المزيد" — ink chrome */}
+			<nav className="fixed inset-x-0 bottom-0 z-40 border-t border-primary-foreground/10 bg-primary pb-[env(safe-area-inset-bottom)] md:hidden">
 				<div className="mx-auto flex max-w-md items-stretch justify-center">
 					{primary.map((item) => (
 						<NavLink
@@ -130,7 +130,7 @@ export default function ShopLayout() {
 							end={item.key === ''}
 							className={({ isActive }) =>
 								`flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition active:scale-[0.98] ${
-									isActive ? 'text-primary' : 'text-muted-foreground'
+									isActive ? 'text-accent' : 'text-primary-foreground/55'
 								}`
 							}
 						>
@@ -146,7 +146,7 @@ export default function ShopLayout() {
 							onClick={() => setMoreOpen((v) => !v)}
 							aria-haspopup="true"
 							aria-expanded={moreOpen}
-							className="flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold text-muted-foreground transition active:scale-[0.98]"
+							className="flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold text-primary-foreground/55 transition active:scale-[0.98]"
 						>
 							<MoreHorizontal className="h-5 w-5" strokeWidth={2} />
 							المزيد
@@ -159,7 +159,7 @@ export default function ShopLayout() {
 									className="fixed inset-0 z-40 cursor-default"
 									onClick={() => setMoreOpen(false)}
 								/>
-								<ul className="absolute bottom-16 inset-x-0 z-50 mx-auto flex w-[92%] flex-col gap-1 rounded-lg border border-border bg-popover p-2 shadow-2xl">
+								<ul className="absolute bottom-16 inset-x-0 z-50 mx-auto flex w-[92%] flex-col gap-1 rounded-sm border border-border bg-popover p-2 shadow-2xl">
 									{more.map((item) => (
 										<li key={item.key}>
 											<NavLink
@@ -167,7 +167,7 @@ export default function ShopLayout() {
 												end={item.key === ''}
 												onClick={() => setMoreOpen(false)}
 												className={({ isActive }) =>
-													`flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition ${
+													`flex min-h-11 items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-semibold transition ${
 														isActive ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted'
 													}`
 												}

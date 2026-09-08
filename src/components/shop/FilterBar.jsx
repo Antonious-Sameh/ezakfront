@@ -12,7 +12,7 @@ export default function FilterBar({
 	onReset, showReset,
 }) {
 	return (
-		<div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 sm:p-4">
+		<div className="flex flex-col gap-3 rounded-sm border border-border bg-card p-3 sm:p-4">
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
 				<div className="relative flex-1">
 					<Search className="pointer-events-none absolute inset-y-0 start-3 my-auto h-4 w-4 text-muted-foreground" strokeWidth={2} />
@@ -22,7 +22,7 @@ export default function FilterBar({
 						onChange={(e) => onSearchChange(e.target.value)}
 						placeholder="ابحث…"
 						aria-label="بحث"
-						className="min-h-11 w-full rounded-md border border-input bg-background ps-9 pe-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/30"
+						className="min-h-11 w-full rounded-sm border border-input bg-background ps-9 pe-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-accent focus:ring-2 focus:ring-ring/30"
 					/>
 				</div>
 
@@ -34,7 +34,7 @@ export default function FilterBar({
 							value={from}
 							onChange={(e) => onDateChange('from', e.target.value)}
 							aria-label="من تاريخ"
-							className="min-h-11 rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30"
+							className="min-h-11 rounded-sm border border-input bg-background px-2 py-1.5 text-sm text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-ring/30"
 						/>
 					</label>
 					<label className="flex flex-col gap-1">
@@ -44,7 +44,7 @@ export default function FilterBar({
 							value={to}
 							onChange={(e) => onDateChange('to', e.target.value)}
 							aria-label="إلى تاريخ"
-							className="min-h-11 rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30"
+							className="min-h-11 rounded-sm border border-input bg-background px-2 py-1.5 text-sm text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-ring/30"
 						/>
 					</label>
 				</div>
@@ -59,7 +59,7 @@ export default function FilterBar({
 								value={extras[f.key] || 'all'}
 								onChange={(e) => onExtraChange(f.key, e.target.value)}
 								aria-label={f.label}
-								className="min-h-9 rounded-md border border-input bg-background px-2 py-1 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30"
+								className="min-h-9 rounded-sm border border-input bg-background px-2 py-1 text-sm text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-ring/30"
 							>
 								{f.options.map((o) => (
 									<option key={o.value} value={o.value}>{o.label}</option>
@@ -74,7 +74,7 @@ export default function FilterBar({
 				<button
 					type="button"
 					onClick={onReset}
-					className="inline-flex min-h-9 w-fit items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground active:scale-[0.98]"
+					className="inline-flex min-h-9 w-fit items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground active:scale-[0.98]"
 				>
 					<X className="h-3.5 w-3.5" strokeWidth={2} />
 					مسح الفلاتر

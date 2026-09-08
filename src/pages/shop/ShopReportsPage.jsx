@@ -10,7 +10,6 @@ import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
-import Reveal from '@/components/Reveal';
 import { ErrorState } from '@/components/StateViews';
 import { AR_LOCALE, PAYMENT_LABELS } from '@/lib/mockData';
 
@@ -28,14 +27,14 @@ function periodRange(id) {
 	return { from: format(from, 'yyyy-MM-dd'), to: format(to, 'yyyy-MM-dd') };
 }
 
-function StatCard({ icon: Icon, label, value, sub }) {
+function StatCard({ icon: Icon, label, value, sub, tone }) {
 	return (
-		<div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4 shadow-[inset_0_2px_10px_hsl(var(--primary)/0.05)] sm:p-5">
-			<span className="grid h-9 w-9 place-items-center rounded-md bg-primary/10 text-primary">
-				<Icon className="h-5 w-5" strokeWidth={1.75} />
+		<div className="flex flex-col gap-2 bg-card p-4 sm:p-5">
+			<span className={`grid h-8 w-8 place-items-center rounded-full ${tone || 'text-muted-foreground'}`}>
+				<Icon className="h-4.5 w-4.5" strokeWidth={1.5} />
 			</span>
 			<p className="text-xs font-semibold text-muted-foreground">{label}</p>
-			<p className="font-display text-2xl font-extrabold tabular-nums text-foreground sm:text-3xl">{value}</p>
+			<p className="font-display text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">{value}</p>
 			{sub ? <p className="text-[11px] text-muted-foreground">{sub}</p> : null}
 		</div>
 	);
@@ -43,9 +42,9 @@ function StatCard({ icon: Icon, label, value, sub }) {
 
 function ChartCard({ title, subtitle, children }) {
 	return (
-		<section className="rounded-lg border border-border bg-card p-4 shadow-[inset_0_2px_10px_hsl(var(--primary)/0.05)] sm:p-5">
+		<section className="rounded-sm border border-border bg-card p-4 sm:p-5">
 			<div className="mb-4">
-				<h2 className="font-display text-base font-bold text-foreground">{title}</h2>
+				<h2 className="font-display text-base font-semibold text-foreground">{title}</h2>
 				{subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
 			</div>
 			{children}
@@ -90,10 +89,10 @@ export default function ShopReportsPage() {
 
 			<header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 className="font-display text-xl font-bold text-foreground sm:text-2xl">التقارير</h1>
+					<h1 className="font-display text-xl font-semibold text-foreground sm:text-2xl">التقارير</h1>
 					<p className="text-xs text-muted-foreground">تقارير شاملة لأداء المحل</p>
 				</div>
-				<div className="flex rounded-md border border-border bg-muted p-1" role="group" aria-label="اختيار الفترة">
+				<div className="flex rounded-sm border border-border bg-muted p-1" role="group" aria-label="اختيار الفترة">
 					{PERIODS.map((p) => (
 						<button
 							key={p.id}
@@ -111,9 +110,9 @@ export default function ShopReportsPage() {
 			</header>
 
 			{loading ? (
-				<div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+				<div className="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-border bg-border lg:grid-cols-4">
 					{Array.from({ length: 4 }).map((_, i) => (
-						<div key={i} className="h-32 animate-pulse rounded-lg border border-border bg-card" />
+						<div key={i} className="h-32 animate-pulse bg-card" />
 					))}
 				</div>
 			) : error ? (
@@ -121,15 +120,15 @@ export default function ShopReportsPage() {
 			) : data ? (
 				<>
 					{/* KPI cards */}
-					<div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-						<Reveal delay={0.02}><StatCard icon={Receipt} label="إجمالي المبيعات" value={num(data.sales.totalSales)} sub={`${num(data.sales.count)} فاتورة`} /></Reveal>
-						<Reveal delay={0.06}><StatCard icon={TrendingUp} label="صافي الربح" value={num(data.profit.totalProfit)} sub={`هامش ${num(data.profit.margin)}%`} accent /></Reveal>
-						<Reveal delay={0.1}><StatCard icon={ShoppingCart} label="إجمالي المشتريات" value={num(data.purchases.totalPurchases)} sub={`${num(data.purchases.count)} فاتورة`} /></Reveal>
-						<Reveal delay={0.14}><StatCard icon={Boxes} label="قيمة المخزون" value={num(data.inventory.totalStockValue)} sub={`${num(data.inventory.totalProducts)} منتج`} /></Reveal>
+					<div className="grid grid-cols-2 divide-x divide-y divide-border overflow-hidden rounded-sm border border-border lg:grid-cols-4">
+						<StatCard icon={Receipt} label="إجمالي المبيعات" value={num(data.sales.totalSales)} sub={`${num(data.sales.count)} فاتورة`} />
+						<StatCard icon={TrendingUp} label="صافي الربح" value={num(data.profit.totalProfit)} sub={`هامش ${num(data.profit.margin)}%`} tone="text-emerald-700" />
+						<StatCard icon={ShoppingCart} label="إجمالي المشتريات" value={num(data.purchases.totalPurchases)} sub={`${num(data.purchases.count)} فاتورة`} />
+						<StatCard icon={Boxes} label="قيمة المخزون" value={num(data.inventory.totalStockValue)} sub={`${num(data.inventory.totalProducts)} منتج`} />
 					</div>
 
 					{/* Sales trend */}
-					<Reveal delay={0.05}>
+					
 						<ChartCard title="تطور المبيعات" subtitle="المبيعات اليومية خلال الفترة">
 							<div dir="ltr" className="h-64 w-full sm:h-72">
 								<ResponsiveContainer width="100%" height="100%">
@@ -149,10 +148,10 @@ export default function ShopReportsPage() {
 								</ResponsiveContainer>
 							</div>
 						</ChartCard>
-					</Reveal>
+					
 
 					{/* Profit trend */}
-					<Reveal delay={0.08}>
+					
 						<ChartCard title="المبيعات والتكلفة والربح" subtitle="مقارنة يومية">
 							<div dir="ltr" className="h-64 w-full sm:h-72">
 								<ResponsiveContainer width="100%" height="100%">
@@ -168,24 +167,24 @@ export default function ShopReportsPage() {
 								</ResponsiveContainer>
 							</div>
 						</ChartCard>
-					</Reveal>
+					
 
 					{/* Top products + payment split */}
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-						<Reveal delay={0.05}>
+						
 							<ChartCard title="أكثر المنتجات مبيعًا" subtitle="الكمية المباعة">
 								<ul className="flex flex-col gap-3">
 									{data.sales.topProducts.map((p, i) => (
 										<li key={p.name} className="flex items-center gap-3">
-											<span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-muted text-xs font-bold tabular-nums text-muted-foreground">{i + 1}</span>
+											<span className="grid h-7 w-7 shrink-0 place-items-center rounded-sm bg-muted text-xs font-semibold tabular-nums text-muted-foreground">{i + 1}</span>
 											<span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{p.name}</span>
-											<span className="shrink-0 text-sm font-bold tabular-nums text-primary">{num(p.qty)}</span>
+											<span className="shrink-0 text-sm font-semibold tabular-nums text-accent">{num(p.qty)}</span>
 										</li>
 									))}
 								</ul>
 							</ChartCard>
-						</Reveal>
-						<Reveal delay={0.08}>
+						
+						
 							<ChartCard title="المبيعات حسب طريقة الدفع" subtitle="توزيع الإجمالي">
 								<ul className="flex flex-col gap-3">
 									{Object.entries(data.sales.byPaymentType).map(([type, value]) => {
@@ -195,7 +194,7 @@ export default function ShopReportsPage() {
 											<li key={type}>
 												<div className="mb-1 flex items-center justify-between text-sm">
 													<span className="font-semibold text-foreground">{PAYMENT_LABELS[type] || type}</span>
-													<span className="font-bold tabular-nums text-foreground">{num(value)} • {pct}%</span>
+													<span className="font-semibold tabular-nums text-foreground">{num(value)} <span className="text-muted-foreground">({pct}%)</span></span>
 												</div>
 												<div className="h-2 overflow-hidden rounded-full bg-muted">
 													<div className="h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
@@ -205,37 +204,37 @@ export default function ShopReportsPage() {
 									})}
 								</ul>
 							</ChartCard>
-						</Reveal>
+						
 					</div>
 
 					{/* Top customers + suppliers */}
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-						<Reveal delay={0.05}>
+						
 							<ChartCard title="أفضل العملاء" subtitle="الأعلى إنفاقًا">
 								<ul className="flex flex-col gap-3">
 									{data.customers.topCustomers.map((c, i) => (
 										<li key={c.id} className="flex items-center gap-3">
-											<span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-muted text-xs font-bold tabular-nums text-muted-foreground">{i + 1}</span>
+											<span className="grid h-7 w-7 shrink-0 place-items-center rounded-sm bg-muted text-xs font-semibold tabular-nums text-muted-foreground">{i + 1}</span>
 											<span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{c.name}</span>
-											<span className="shrink-0 text-sm font-bold tabular-nums text-primary">{num(c.totalSpent)}</span>
+											<span className="shrink-0 text-sm font-semibold tabular-nums text-accent">{num(c.totalSpent)}</span>
 										</li>
 									))}
 								</ul>
 							</ChartCard>
-						</Reveal>
-						<Reveal delay={0.08}>
+						
+						
 							<ChartCard title="أفضل الموردين" subtitle="الأعلى تعاملًا">
 								<ul className="flex flex-col gap-3">
 									{data.suppliers.topSuppliers.map((s, i) => (
 										<li key={s.id} className="flex items-center gap-3">
-											<span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-muted text-xs font-bold tabular-nums text-muted-foreground">{i + 1}</span>
+											<span className="grid h-7 w-7 shrink-0 place-items-center rounded-sm bg-muted text-xs font-semibold tabular-nums text-muted-foreground">{i + 1}</span>
 											<span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{s.name}</span>
-											<span className="shrink-0 text-sm font-bold tabular-nums text-primary">{num(s.totalAmount)}</span>
+											<span className="shrink-0 text-sm font-semibold tabular-nums text-accent">{num(s.totalAmount)}</span>
 										</li>
 									))}
 								</ul>
 							</ChartCard>
-						</Reveal>
+						
 					</div>
 				</>
 			) : null}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -13,64 +13,71 @@ body {
   ---break---
 */
 
+/*
+  "دفتر الحسابات" — a private ledger/statement, not a SaaS admin kit.
+  ink = chrome (header/nav/hero bands), paper = warm readable content
+  surface, brass = the one accent (wealth, restraint), oxblood = a second,
+  rarer accent for anything urgent/negative — evolved from the shop
+  systems' own original maroon rather than discarded outright.
+*/
 @layer base {
   :root {
-    --background: 350 24% 96%;
-    --foreground: 325 30% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 325 30% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 325 30% 12%;
-    --primary: 324 44% 24%;
-    --primary-foreground: 350 30% 96%;
-    --secondary: 340 20% 90%;
-    --secondary-foreground: 325 30% 15%;
-    --muted: 340 18% 91%;
-    --muted-foreground: 330 10% 40%;
-    --accent: 22 55% 42%;
-    --accent-foreground: 30 40% 96%;
-    --destructive: 0 70% 45%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 335 16% 84%;
-    --input: 335 16% 84%;
-    --ring: 324 44% 24%;
+    --background: 42 28% 95%;       /* paper */
+    --foreground: 30 18% 14%;       /* ink text on paper */
+    --card: 40 33% 98%;             /* elevated surface */
+    --card-foreground: 30 18% 14%;
+    --popover: 40 33% 98%;
+    --popover-foreground: 30 18% 14%;
+    --primary: 32 14% 12%;          /* ink */
+    --primary-foreground: 42 30% 95%;
+    --secondary: 40 20% 90%;
+    --secondary-foreground: 30 18% 16%;
+    --muted: 38 18% 90%;
+    --muted-foreground: 32 12% 40%;
+    --accent: 38 45% 42%;           /* brass */
+    --accent-foreground: 42 40% 97%;
+    --destructive: 353 55% 30%;     /* oxblood */
+    --destructive-foreground: 350 30% 96%;
+    --border: 36 16% 84%;
+    --input: 36 16% 84%;
+    --ring: 38 45% 42%;
     --radius: 0.375rem;
-    --sidebar-background: 324 44% 18%;
-    --sidebar-foreground: 350 24% 88%;
-    --sidebar-primary: 22 55% 50%;
-    --sidebar-primary-foreground: 30 40% 96%;
-    --sidebar-accent: 324 35% 26%;
-    --sidebar-accent-foreground: 350 30% 96%;
-    --sidebar-border: 324 30% 28%;
-    --sidebar-ring: 22 55% 50%;
+    --sidebar-background: 32 16% 11%;
+    --sidebar-foreground: 42 24% 88%;
+    --sidebar-primary: 38 50% 52%;
+    --sidebar-primary-foreground: 32 16% 11%;
+    --sidebar-accent: 32 14% 18%;
+    --sidebar-accent-foreground: 42 30% 95%;
+    --sidebar-border: 32 14% 22%;
+    --sidebar-ring: 38 50% 52%;
   }
   .dark {
-    --background: 325 25% 8%;
-    --foreground: 350 24% 92%;
-    --card: 325 22% 11%;
-    --card-foreground: 350 24% 92%;
-    --popover: 325 22% 11%;
-    --popover-foreground: 350 24% 92%;
-    --primary: 350 30% 90%;
-    --primary-foreground: 324 44% 18%;
-    --secondary: 325 15% 18%;
-    --secondary-foreground: 350 24% 92%;
-    --muted: 325 15% 18%;
-    --muted-foreground: 335 12% 62%;
-    --accent: 22 55% 55%;
-    --accent-foreground: 325 25% 8%;
-    --destructive: 0 62% 45%;
+    --background: 30 16% 9%;
+    --foreground: 42 24% 92%;
+    --card: 30 15% 12%;
+    --card-foreground: 42 24% 92%;
+    --popover: 30 15% 12%;
+    --popover-foreground: 42 24% 92%;
+    --primary: 42 30% 90%;
+    --primary-foreground: 32 16% 12%;
+    --secondary: 30 12% 18%;
+    --secondary-foreground: 42 24% 92%;
+    --muted: 30 12% 18%;
+    --muted-foreground: 36 10% 62%;
+    --accent: 38 55% 58%;
+    --accent-foreground: 30 16% 9%;
+    --destructive: 353 50% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 325 14% 20%;
-    --input: 325 14% 20%;
-    --ring: 22 55% 55%;
-    --sidebar-background: 325 25% 6%;
-    --sidebar-foreground: 350 24% 88%;
-    --sidebar-primary: 22 55% 50%;
-    --sidebar-primary-foreground: 30 40% 96%;
-    --sidebar-accent: 325 15% 18%;
-    --sidebar-accent-foreground: 350 24% 92%;
-    --sidebar-border: 325 14% 20%;
-    --sidebar-ring: 22 55% 55%;
+    --border: 30 12% 20%;
+    --input: 30 12% 20%;
+    --ring: 38 55% 58%;
+    --sidebar-background: 30 16% 7%;
+    --sidebar-foreground: 42 24% 88%;
+    --sidebar-primary: 38 50% 52%;
+    --sidebar-primary-foreground: 30 16% 7%;
+    --sidebar-accent: 30 12% 16%;
+    --sidebar-accent-foreground: 42 24% 92%;
+    --sidebar-border: 30 12% 20%;
+    --sidebar-ring: 38 50% 52%;
   }
 }

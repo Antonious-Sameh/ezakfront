@@ -31,7 +31,7 @@ export default function DetailModal({ open, onClose, title, loading, error, chil
 				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
-					<h2 className="font-display text-base font-bold text-foreground">{title}</h2>
+					<h2 className="font-display text-base font-semibold text-foreground">{title}</h2>
 					<button
 						type="button"
 						onClick={onClose}

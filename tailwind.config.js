@@ -18,7 +18,7 @@ module.exports = {
 		extend: {
 			fontFamily: {
 				sans: ['"IBM Plex Sans Arabic"', 'system-ui', 'sans-serif'],
-				display: ['"Noto Kufi Arabic"', '"IBM Plex Sans Arabic"', 'sans-serif'],
+				display: ['"Noto Naskh Arabic"', '"IBM Plex Sans Arabic"', 'serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

@@ -11,7 +11,7 @@ export function ErrorState({ title = 'حصل خطأ', message, onRetry, classNam
 			<span className="grid h-12 w-12 place-items-center rounded-full bg-destructive/10 text-destructive">
 				<AlertTriangle className="h-6 w-6" strokeWidth={1.75} />
 			</span>
-			<p className="font-display font-bold text-foreground">{title}</p>
+			<p className="font-display font-semibold text-foreground">{title}</p>
 			{message ? <p className="max-w-sm text-sm text-muted-foreground">{message}</p> : null}
 			{onRetry ? (
 				<button
@@ -36,7 +36,7 @@ export function EmptyState({ icon: Icon = Inbox, title, message, className = '' 
 			<span className="grid h-12 w-12 place-items-center rounded-full bg-muted text-muted-foreground">
 				<Icon className="h-6 w-6" strokeWidth={1.75} />
 			</span>
-			<p className="font-display font-bold text-foreground">{title}</p>
+			<p className="font-display font-semibold text-foreground">{title}</p>
 			{message ? <p className="max-w-sm text-sm text-muted-foreground">{message}</p> : null}
 		</div>
 	);

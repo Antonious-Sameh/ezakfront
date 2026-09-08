@@ -100,7 +100,7 @@ export const SECTION_CONFIGS = {
 			<div className="flex flex-col gap-5">
 				<div className="flex items-center justify-between gap-3">
 					<div>
-						<p className="font-display text-lg font-bold text-foreground">{item.invoiceNo}</p>
+						<p className="font-display text-lg font-semibold text-foreground">{item.invoiceNo}</p>
 						<p className="text-xs text-muted-foreground">{fullDate(item.date)}</p>
 					</div>
 					<Badge status={item.status} />
@@ -119,7 +119,7 @@ export const SECTION_CONFIGS = {
 				</div>
 				<div className="flex items-center justify-between rounded-md bg-primary px-4 py-3 text-primary-foreground">
 					<span className="text-sm font-semibold">الإجمالي النهائي</span>
-					<span className="font-display text-lg font-extrabold tabular-nums">{num(item.total)}</span>
+					<span className="font-display text-lg font-bold tabular-nums">{num(item.total)}</span>
 				</div>
 			</div>
 		),
@@ -142,7 +142,7 @@ export const SECTION_CONFIGS = {
 			<div className="flex flex-col gap-5">
 				<div className="flex items-center justify-between gap-3">
 					<div>
-						<p className="font-display text-lg font-bold text-foreground">{item.invoiceNo}</p>
+						<p className="font-display text-lg font-semibold text-foreground">{item.invoiceNo}</p>
 						<p className="text-xs text-muted-foreground">{fullDate(item.date)}</p>
 					</div>
 					<Badge status={item.status} />
@@ -157,7 +157,7 @@ export const SECTION_CONFIGS = {
 				</div>
 				<div className="flex items-center justify-between rounded-md bg-primary px-4 py-3 text-primary-foreground">
 					<span className="text-sm font-semibold">الإجمالي</span>
-					<span className="font-display text-lg font-extrabold tabular-nums">{num(item.total)}</span>
+					<span className="font-display text-lg font-bold tabular-nums">{num(item.total)}</span>
 				</div>
 			</div>
 		),
@@ -182,7 +182,7 @@ export const SECTION_CONFIGS = {
 		renderDetail: (item) => (
 			<div className="flex flex-col gap-5">
 				<div className="flex items-center justify-between gap-3">
-					<p className="font-display text-lg font-bold text-foreground">{item.name}</p>
+					<p className="font-display text-lg font-semibold text-foreground">{item.name}</p>
 					<Badge status={item.status} />
 				</div>
 				<DetailGrid fields={[
@@ -213,7 +213,7 @@ export const SECTION_CONFIGS = {
 		],
 		renderDetail: (item) => (
 			<div className="flex flex-col gap-5">
-				<p className="font-display text-lg font-bold text-foreground">{item.name}</p>
+				<p className="font-display text-lg font-semibold text-foreground">{item.name}</p>
 				<DetailGrid fields={[
 					{ label: 'الهاتف', value: item.phone },
 					{ label: 'البريد الإلكتروني', value: item.email },
@@ -241,7 +241,7 @@ export const SECTION_CONFIGS = {
 		],
 		renderDetail: (item) => (
 			<div className="flex flex-col gap-5">
-				<p className="font-display text-lg font-bold text-foreground">{item.name}</p>
+				<p className="font-display text-lg font-semibold text-foreground">{item.name}</p>
 				<DetailGrid fields={[
 					{ label: 'المسؤول', value: item.contactPerson },
 					{ label: 'الهاتف', value: item.phone },
@@ -271,7 +271,7 @@ export const SECTION_CONFIGS = {
 		],
 		renderDetail: (item) => (
 			<div className="flex flex-col gap-5">
-				<p className="font-display text-lg font-bold text-foreground">{item.category}</p>
+				<p className="font-display text-lg font-semibold text-foreground">{item.category}</p>
 				<DetailGrid fields={[
 					{ label: 'المبلغ', value: num(item.amount) },
 					{ label: 'التاريخ', value: fullDate(item.date) },
@@ -300,8 +300,8 @@ export const SECTION_CONFIGS = {
 		renderDetail: (item) => (
 			<div className="flex flex-col gap-5">
 				<div className="flex items-center justify-between gap-3">
-					<p className="font-display text-lg font-bold text-foreground">{item.type === 'in' ? 'حركة داخلية' : 'حركة خارجية'}</p>
-					<span className={`font-display text-xl font-extrabold tabular-nums ${item.type === 'in' ? 'text-emerald-700' : 'text-destructive'}`}>{item.type === 'in' ? '+' : '−'}{num(item.amount)}</span>
+					<p className="font-display text-lg font-semibold text-foreground">{item.type === 'in' ? 'حركة داخلية' : 'حركة خارجية'}</p>
+					<span className={`font-display text-xl font-bold tabular-nums ${item.type === 'in' ? 'text-emerald-700' : 'text-destructive'}`}>{item.type === 'in' ? '+' : '−'}{num(item.amount)}</span>
 				</div>
 				<DetailGrid fields={[
 					{ label: 'التصنيف', value: item.category },
@@ -327,7 +327,7 @@ export const SECTION_CONFIGS = {
 		],
 		renderDetail: (item) => (
 			<div className="flex flex-col gap-5">
-				<p className="font-display text-lg font-bold text-foreground">{ACTIVITY_LABELS_REAL[item.type] || item.type}</p>
+				<p className="font-display text-lg font-semibold text-foreground">{ACTIVITY_LABELS_REAL[item.type] || item.type}</p>
 				<DetailGrid fields={[
 					{ label: 'الوصف', value: item.description },
 					{ label: 'التاريخ', value: fullDate(item.date) },

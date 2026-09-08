@@ -19,7 +19,7 @@ export default function Pagination({ page, totalPages, onPageChange }) {
 					type="button"
 					onClick={() => go(page - 1)}
 					disabled={page <= 1}
-					className="inline-flex min-h-11 items-center gap-1 rounded-md border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary/40 active:scale-[0.98] disabled:opacity-40"
+					className="inline-flex min-h-11 items-center gap-1 rounded-sm border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:border-accent/50 active:scale-[0.98] disabled:opacity-40"
 				>
 					<ChevronRight className="h-4 w-4" strokeWidth={2} />
 					السابق
@@ -31,7 +31,7 @@ export default function Pagination({ page, totalPages, onPageChange }) {
 					type="button"
 					onClick={() => go(page + 1)}
 					disabled={page >= totalPages}
-					className="inline-flex min-h-11 items-center gap-1 rounded-md border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary/40 active:scale-[0.98] disabled:opacity-40"
+					className="inline-flex min-h-11 items-center gap-1 rounded-sm border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:border-accent/50 active:scale-[0.98] disabled:opacity-40"
 				>
 					التالي
 					<ChevronLeft className="h-4 w-4" strokeWidth={2} />
@@ -45,7 +45,7 @@ export default function Pagination({ page, totalPages, onPageChange }) {
 					onClick={() => go(page - 1)}
 					disabled={page <= 1}
 					aria-label="الصفحة السابقة"
-					className="inline-flex min-h-9 items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-semibold text-foreground transition hover:border-primary/40 active:scale-[0.98] disabled:opacity-40"
+					className="inline-flex min-h-9 items-center gap-1 rounded-sm border border-border bg-card px-3 py-1.5 text-sm font-semibold text-foreground transition hover:border-accent/50 active:scale-[0.98] disabled:opacity-40"
 				>
 					<ChevronRight className="h-4 w-4" strokeWidth={2} />
 					السابق
@@ -59,10 +59,10 @@ export default function Pagination({ page, totalPages, onPageChange }) {
 							type="button"
 							onClick={() => go(p)}
 							aria-current={p === page ? 'page' : undefined}
-							className={`min-h-9 min-w-9 rounded-md px-3 py-1.5 text-sm font-semibold tabular-nums transition active:scale-[0.98] ${
+							className={`min-h-9 min-w-9 rounded-sm px-3 py-1.5 text-sm font-semibold tabular-nums transition active:scale-[0.98] ${
 								p === page
-									? 'bg-primary text-primary-foreground'
-									: 'border border-border bg-card text-foreground hover:border-primary/40'
+									? 'bg-accent text-accent-foreground'
+									: 'border border-border bg-card text-foreground hover:border-accent/50'
 							}`}
 						>
 							{p}
@@ -74,7 +74,7 @@ export default function Pagination({ page, totalPages, onPageChange }) {
 					onClick={() => go(page + 1)}
 					disabled={page >= totalPages}
 					aria-label="الصفحة التالية"
-					className="inline-flex min-h-9 items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-semibold text-foreground transition hover:border-primary/40 active:scale-[0.98] disabled:opacity-40"
+					className="inline-flex min-h-9 items-center gap-1 rounded-sm border border-border bg-card px-3 py-1.5 text-sm font-semibold text-foreground transition hover:border-accent/50 active:scale-[0.98] disabled:opacity-40"
 				>
 					التالي
 					<ChevronLeft className="h-4 w-4" strokeWidth={2} />

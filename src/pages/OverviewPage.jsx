@@ -6,7 +6,6 @@ import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
-import Reveal from '@/components/Reveal';
 import ShopCard, { ShopCardSkeleton } from '@/components/ShopCard';
 import SalesCompareChart from '@/components/SalesCompareChart';
 import { EmptyState, ErrorState } from '@/components/StateViews';
@@ -69,46 +68,52 @@ export default function OverviewPage() {
 				<meta name="description" content="نظرة عامة على مبيعات وأرباح محلاتك الأربعة: مبيعات اليوم، حالة كل محل، وتنبيهات المخزون الناقص." />
 			</Helmet>
 
-			{/* Hero: total sales across the four shops */}
-			<Reveal>
-				<section className="relative overflow-hidden rounded-lg border border-primary/20 bg-primary px-5 py-8 text-primary-foreground sm:px-8 sm:py-10">
+			{/* Hero: total sales across the four shops, ledger-header style */}
+			
+				<section className="relative overflow-hidden rounded-sm border border-primary/20 bg-primary px-5 py-8 text-primary-foreground sm:px-8 sm:py-10">
 					<span
 						aria-hidden="true"
-						className="pointer-events-none absolute -top-8 -start-4 select-none font-display text-[26vw] font-extrabold leading-none text-primary-foreground/10 sm:text-[10rem]"
+						className="pointer-events-none absolute -top-6 -start-4 select-none font-display text-[24vw] font-semibold leading-none text-primary-foreground/[0.06] sm:text-[9rem]"
 					>
 						المحلات
 					</span>
-					<div className="relative">
-						<p className="text-xs font-semibold text-primary-foreground/70">نظرة عامة — {periodLabel}</p>
-						{compare.loading ? (
-							<div className="mt-3 space-y-3">
-								<div className="h-12 w-56 max-w-full animate-pulse rounded-md bg-primary-foreground/15" />
-								<div className="h-4 w-40 animate-pulse rounded bg-primary-foreground/15" />
+					<div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+						<div>
+							<p className="text-xs font-semibold text-primary-foreground/60">نظرة عامة — {periodLabel}</p>
+							{compare.loading ? (
+								<div className="mt-3 space-y-3">
+									<div className="h-12 w-56 max-w-full animate-pulse rounded-sm bg-primary-foreground/10" />
+								</div>
+							) : compare.error ? (
+								<p className="mt-3 text-sm text-primary-foreground/70">تعذر تحميل الإجمالي — جرّب إعادة المحاولة تحت.</p>
+							) : (
+								<>
+									<p className="mt-2 text-sm text-primary-foreground/60">إجمالي مبيعات الأربعة محلات</p>
+									<p className="mt-1 font-display text-4xl font-semibold tabular-nums text-accent sm:text-5xl">
+										{formatNumber(compare.data?.totalSales, { locale: AR_LOCALE })}
+									</p>
+								</>
+							)}
+						</div>
+
+						{!compare.loading && !compare.error ? (
+							<div className="border-t border-primary-foreground/10 pt-4 sm:border-t-0 sm:border-s sm:pe-8 sm:pt-0 sm:ps-8">
+								<p className="text-xs font-semibold text-primary-foreground/60">صافي الربح</p>
+								<p className="mt-1 font-display text-2xl font-semibold tabular-nums text-primary-foreground sm:text-3xl">
+									{formatNumber(compare.data?.totalProfit, { locale: AR_LOCALE })}
+								</p>
 							</div>
-						) : compare.error ? (
-							<p className="mt-3 text-sm text-primary-foreground/80">تعذر تحميل الإجمالي — جرّب إعادة المحاولة تحت.</p>
-						) : (
-							<>
-								<p className="mt-2 font-display text-4xl font-extrabold tabular-nums sm:text-5xl">
-									{formatNumber(compare.data?.totalSales, { locale: AR_LOCALE })}
-								</p>
-								<p className="mt-2 text-sm text-primary-foreground/80">
-									إجمالي مبيعات الأربعة محلات
-									<span className="mx-2 text-primary-foreground/40">•</span>
-									الربح: <span className="font-bold tabular-nums">{formatNumber(compare.data?.totalProfit, { locale: AR_LOCALE })}</span>
-								</p>
-							</>
-						)}
+						) : null}
 					</div>
 				</section>
-			</Reveal>
+			
 
-			{/* Shop cards */}
+			{/* Shop ledger */}
 			<section aria-label="المحلات">
-				<Reveal delay={0.05}>
+				
 					<div className="mb-4 flex items-end justify-between gap-3">
 						<div>
-							<h2 className="font-display text-lg font-bold text-foreground">المحلات</h2>
+							<h2 className="font-display text-lg font-semibold text-foreground">المحلات</h2>
 							<p className="text-xs text-muted-foreground">اضغط على أي محل لعرض تفاصيله</p>
 						</div>
 						{shops.data ? (
@@ -117,10 +122,10 @@ export default function OverviewPage() {
 							</span>
 						) : null}
 					</div>
-				</Reveal>
+				
 
 				{shops.loading ? (
-					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+					<div className="divide-y divide-border overflow-hidden rounded-sm border border-border">
 						{Array.from({ length: 4 }).map((_, i) => (
 							<ShopCardSkeleton key={i} />
 						))}
@@ -138,25 +143,25 @@ export default function OverviewPage() {
 						message="لما المحلات تتضاف على النظام هتظهر هنا تلقائيًا."
 					/>
 				) : (
-					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-						{shops.data.map((shop, index) => (
-							<Reveal key={shop.id} delay={0.05 + index * 0.07} className={index % 2 === 1 ? 'xl:mt-8' : ''}>
-								<ShopCard shop={shop} index={index} />
-							</Reveal>
-						))}
-					</div>
+					
+						<div className="divide-y divide-border overflow-hidden rounded-sm border border-border">
+							{shops.data.map((shop, index) => (
+								<ShopCard key={shop.id} shop={shop} index={index} />
+							))}
+						</div>
+					
 				)}
 			</section>
 
 			{/* Comparison chart */}
-			<Reveal delay={0.1}>
+			
 				<section
 					aria-label="مقارنة المبيعات"
-					className="rounded-lg border border-border bg-card p-5 shadow-[inset_0_2px_10px_hsl(var(--primary)/0.05)] sm:p-6"
+					className="rounded-sm border border-border bg-card p-5 sm:p-6"
 				>
 					<div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 						<div>
-							<h2 className="font-display text-lg font-bold text-foreground">مقارنة المحلات</h2>
+							<h2 className="font-display text-lg font-semibold text-foreground">مقارنة المحلات</h2>
 							<p className="text-xs text-muted-foreground">المبيعات والربح لكل محل في الفترة المختارة</p>
 						</div>
 						<PeriodFilter value={period} onChange={setPeriod} />
@@ -184,7 +189,7 @@ export default function OverviewPage() {
 						<SalesCompareChart data={compare.data.byShop} />
 					)}
 				</section>
-			</Reveal>
+			
 		</div>
 	);
 }

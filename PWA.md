@@ -27,7 +27,7 @@ own icon design.
 
 ## Colors
 
-`background_color` (#582243) matches the login page's full-screen
-background; `theme_color` (#f7f2f3) matches the authenticated app shell's
-light background — both pulled from this project's own `index.css`
+`background_color` (#231f1a) matches the login page's full-screen ink
+background; `theme_color` (#f6f4ef) matches the authenticated app shell's
+warm paper background — both pulled from this project's own `index.css`
 `--primary`/`--background` tokens, not copied from System 1's palette.
