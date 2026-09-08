@@ -77,5 +77,20 @@ export default function ShopSectionPage() {
 		return <p className="py-10 text-center text-sm text-muted-foreground">القسم غير موجود</p>;
 	}
 
-	return <ResourceListPage shopId={shopId} config={config} summaryNode={summaryNode} />;
+	return (
+		<ResourceListPage
+			// Force a full remount on shop or section change. Without this,
+			// React Router keeps this same component instance alive when only
+			// the URL params change (it's the same component type at the same
+			// position in the tree) — so page/search/filters/selectedId from
+			// the PREVIOUS section stayed applied to the NEW entity's request,
+			// which is exactly the "switch page and the data looks wrong"
+			// symptom, and a still-open detail modal could end up fetching an
+			// id that belongs to a different entity entirely.
+			key={`${shopId}:${section}`}
+			shopId={shopId}
+			config={config}
+			summaryNode={summaryNode}
+		/>
+	);
 }

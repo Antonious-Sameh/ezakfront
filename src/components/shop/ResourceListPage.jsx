@@ -47,11 +47,18 @@ export default function ResourceListPage({ shopId, config, summaryNode }) {
 
 	// Detail modal state + fetcher.
 	const [selectedId, setSelectedId] = useState(null);
-	const detailFetcher = useCallback(
-		() => api.getShopItem(token, shopId, entity, selectedId).then((res) => res.data),
-		[token, shopId, entity, selectedId],
-	);
-	const detail = useApiQuery(selectedId ? detailFetcher : () => Promise.resolve(null));
+	// Stable fetcher identity even while selectedId is null — the previous
+	// version passed a brand-new inline `() => Promise.resolve(null)` on
+	// every render whenever no row was selected, which useApiQuery's effect
+	// treats as "the fetcher changed" and re-runs on every single render:
+	// a continuous render loop that got worse the longer a shop section
+	// stayed mounted (this is the "page hangs" bug — everything else
+	// competing with a runaway effect on every render).
+	const detailFetcher = useCallback(() => {
+		if (!selectedId) return Promise.resolve(null);
+		return api.getShopItem(token, shopId, entity, selectedId).then((res) => res.data);
+	}, [token, shopId, entity, selectedId]);
+	const detail = useApiQuery(detailFetcher);
 
 	const pagination = list.data?.pagination;
 	const rows = list.data?.data || [];

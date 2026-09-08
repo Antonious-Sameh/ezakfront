@@ -9,7 +9,7 @@ import {
 	Users, Truck, Wallet, Activity as ActivityIcon,
 } from 'lucide-react';
 import { formatNumber, formatDate } from '@/lib/format';
-import { PAYMENT_LABELS, ACTIVITY_LABELS, AR_LOCALE } from '@/lib/mockData';
+import { PAYMENT_LABELS, ACTIVITY_LABELS_REAL, AR_LOCALE } from '@/lib/mockData';
 
 const num = (v) => formatNumber(v, { locale: AR_LOCALE });
 const money = (v) => formatNumber(v, { locale: AR_LOCALE });
@@ -85,8 +85,7 @@ export const SECTION_CONFIGS = {
 		key: 'sales', entity: 'sales', title: 'المبيعات', subtitle: 'كل فواتير البيع للمحل',
 		icon: Receipt, searchPlaceholder: 'ابحث برقم الفاتورة أو اسم العميل…',
 		extraFilters: [
-			{ key: 'paymentType', label: 'نوع الدفع', options: [allOption, { value: 'cash', label: 'نقدي' }, { value: 'card', label: 'بطاقة' }, { value: 'credit', label: 'آجل' }] },
-			{ key: 'status', label: 'الحالة', options: [allOption, { value: 'completed', label: 'مكتملة' }, { value: 'returned', label: 'مرتجعة' }] },
+			{ key: 'paymentType', label: 'نوع الدفع', options: [allOption, { value: 'cash', label: 'نقدي' }, { value: 'credit', label: 'آجل' }] },
 		],
 		columns: [
 			{ key: 'invoiceNo', label: 'الفاتورة', primary: true, mobile: true },
@@ -129,9 +128,9 @@ export const SECTION_CONFIGS = {
 	purchases: {
 		key: 'purchases', entity: 'purchases', title: 'المشتريات', subtitle: 'فواتير المشتريات من الموردين',
 		icon: ShoppingCart, searchPlaceholder: 'ابحث برقم الفاتورة أو اسم المورد…',
-		extraFilters: [
-			{ key: 'status', label: 'الحالة', options: [allOption, { value: 'received', label: 'مستلمة' }, { value: 'pending', label: 'معلقة' }] },
-		],
+		// No status filter — Purchase has no such field in the real system
+		// (every purchase is fully recorded when created, no pending state).
+		extraFilters: [],
 		columns: [
 			{ key: 'invoiceNo', label: 'الفاتورة', primary: true, mobile: true },
 			{ key: 'supplierName', label: 'المورد', mobile: true },
@@ -318,17 +317,17 @@ export const SECTION_CONFIGS = {
 		key: 'activity', entity: 'activity', title: 'سجل النشاط', subtitle: 'آخر العمليات على المحل',
 		icon: ActivityIcon, searchPlaceholder: 'ابحث في السجل…',
 		extraFilters: [
-			{ key: 'type', label: 'النوع', options: [allOption, ...Object.entries(ACTIVITY_LABELS).map(([value, label]) => ({ value, label }))] },
+			{ key: 'type', label: 'النوع', options: [allOption, ...Object.entries(ACTIVITY_LABELS_REAL).map(([value, label]) => ({ value, label }))] },
 		],
 		columns: [
-			{ key: 'type', label: 'النوع', render: (v) => <span className="inline-flex items-center rounded-sm bg-muted px-2 py-0.5 text-[11px] font-semibold text-foreground">{ACTIVITY_LABELS[v] || v}</span>, mobile: true },
+			{ key: 'type', label: 'النوع', render: (v) => <span className="inline-flex items-center rounded-sm bg-muted px-2 py-0.5 text-[11px] font-semibold text-foreground">{ACTIVITY_LABELS_REAL[v] || v}</span>, mobile: true },
 			{ key: 'description', label: 'الوصف', primary: true, mobile: true },
 			{ key: 'date', label: 'التاريخ', render: shortDate, mobile: true },
 			{ key: 'user', label: 'المستخدم' },
 		],
 		renderDetail: (item) => (
 			<div className="flex flex-col gap-5">
-				<p className="font-display text-lg font-bold text-foreground">{ACTIVITY_LABELS[item.type] || item.type}</p>
+				<p className="font-display text-lg font-bold text-foreground">{ACTIVITY_LABELS_REAL[item.type] || item.type}</p>
 				<DetailGrid fields={[
 					{ label: 'الوصف', value: item.description },
 					{ label: 'التاريخ', value: fullDate(item.date) },

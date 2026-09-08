@@ -55,10 +55,21 @@ const PAYMENT_TYPES = ['cash', 'card', 'credit'];
 const PAYMENT_LABELS = { cash: 'نقدي', card: 'بطاقة', credit: 'آجل' };
 const EXPENSE_CATEGORIES = ['إيجار', 'كهرباء', 'رواتب', 'صيانة', 'نقل', 'أخرى'];
 const CASHBOX_CATEGORIES = ['مبيعات', 'مشتريات', 'إيداع', 'سحب', 'مصروف', 'أخرى'];
+// Used only by the mock-data generator below (demo/preview mode with no
+// real backend) — kept separate from ACTIVITY_LABELS_REAL because the mock
+// feed's made-up variety doesn't need to match the real backend's actual
+// enum (see ActivityLog's ACTIVITY_TYPES in Shops 1-4's models/constants.js).
 const ACTIVITY_TYPES = ['sale', 'purchase', 'stock', 'login', 'customer', 'expense'];
 const ACTIVITY_LABELS = {
 	sale: 'بيع', purchase: 'شراء', stock: 'مخزون', login: 'تسجيل دخول',
 	customer: 'عميل', expense: 'مصروف',
+};
+// The real backend's activity `type` values (see Shops 1-4's
+// src/models/constants.js ACTIVITY_TYPES) — used by sectionConfigs.jsx for
+// the actual filter dropdown and label rendering against live API data.
+const ACTIVITY_LABELS_REAL = {
+	product: 'منتج', customer: 'عميل', supplier: 'مورد', sale: 'بيع',
+	purchase: 'شراء', expense: 'مصروف', cash: 'حركة نقدية', settings: 'إعدادات',
 };
 
 function daysAgo(rng, maxDays = 60) {
@@ -507,4 +518,4 @@ export const mock = {
 	getShopReport: (shopId, type, params) => buildReport(shopId, shopIndex(shopId), type, parseParams(params)),
 };
 
-export { PAYMENT_LABELS, ACTIVITY_LABELS, AR_LOCALE };
+export { PAYMENT_LABELS, ACTIVITY_LABELS, ACTIVITY_LABELS_REAL, AR_LOCALE };
