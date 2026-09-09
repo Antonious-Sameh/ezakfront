@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { format, subDays } from 'date-fns';
-import { Store, RefreshCw } from 'lucide-react';
+import { Store, RefreshCw, ChevronLeft, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
@@ -21,7 +21,7 @@ const PERIODS = [
 function PeriodFilter({ value, onChange, disabled }) {
     return (
         <div 
-            className="flex w-full items-center justify-between rounded-lg border border-border bg-muted/60 p-1 sm:w-auto overflow-x-auto" 
+            className="flex w-full items-center justify-between rounded-xl border border-border bg-muted/50 p-1 sm:w-auto overflow-x-auto" 
             role="group" 
             aria-label="اختيار الفترة"
         >
@@ -34,10 +34,10 @@ function PeriodFilter({ value, onChange, disabled }) {
                         disabled={disabled}
                         onClick={() => onChange(period.id)}
                         aria-pressed={isActive}
-                        className={`min-h-[40px] flex-1 min-w-[70px] rounded-md px-3 py-1.5 text-xs font-semibold sm:text-sm transition-all active:scale-[0.98] sm:flex-none ${
+                        className={`min-h-[38px] flex-1 min-w-[70px] rounded-lg px-3 py-1.5 text-xs font-semibold sm:text-sm transition-all active:scale-[0.98] sm:flex-none ${
                             isActive
-                                ? 'bg-background text-foreground shadow-sm font-bold border border-border/50'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                                ? 'bg-background text-primary shadow-sm font-bold border border-border/60'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                         {period.label}
@@ -81,14 +81,14 @@ export default function OverviewPage() {
     const compare = useApiQuery(compareFetcher);
 
     return (
-        <div className="flex flex-col gap-6 sm:gap-8 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex flex-col gap-6 sm:gap-8 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 dir-rtl">
             <Helmet>
                 <title>الرئيسية — لوحة تحكم المحلات</title>
                 <meta name="description" content="نظرة عامة على مبيعات وأرباح محلاتك الأربعة: مبيعات اليوم، حالة كل محل، وتنبيهات المخزون الناقص." />
             </Helmet>
 
             {/* Hero Section: إجمالي المبيعات والأرباح */}
-            <section className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary via-primary to-primary/90 px-6 py-8 text-primary-foreground shadow-lg sm:px-8 sm:py-10">
+            <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary via-primary to-primary/90 px-6 py-8 text-primary-foreground shadow-xl sm:px-8 sm:py-10">
                 <span
                     aria-hidden="true"
                     className="pointer-events-none absolute -top-8 -start-4 select-none font-display text-[20vw] font-bold leading-none text-primary-foreground/[0.05] sm:text-[8rem] md:text-[10rem]"
@@ -99,7 +99,7 @@ export default function OverviewPage() {
                 <div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
-                            <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400/50" />
                             <p className="text-xs font-medium text-primary-foreground/80">
                                 نظرة عامة — {periodLabel}
                             </p>
@@ -117,7 +117,7 @@ export default function OverviewPage() {
                         ) : (
                             <>
                                 <p className="mt-2 text-xs sm:text-sm text-primary-foreground/70">
-                                    إجمالي مبيعات الأربعة محلات
+                                    إجمالي مبيعات المحلات
                                 </p>
                                 <p className="mt-1 font-display text-3xl font-extrabold tracking-tight tabular-nums text-accent sm:text-4xl md:text-5xl">
                                     {formatNumber(compare.data?.totalSales ?? 0, { locale: AR_LOCALE })}
@@ -137,25 +137,25 @@ export default function OverviewPage() {
                 </div>
             </section>
 
-            {/* Shop Ledger Section */}
+            {/* Shop Ledger Section: تصميم محسن لاختيار المحلات */}
             <section aria-label="قائمة المحلات" className="space-y-4">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3 px-1">
                     <div>
-                        <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-foreground">
-                            المحلات
+                        <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                            <span>المحلات المتاحة</span>
                         </h2>
-                        <p className="text-xs text-muted-foreground">اضغط على أي محل لعرض التفاصيل المتقدمة</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">اختر المحل للتحكم وإدارة التفاصيل</p>
                     </div>
 
                     {shops.data ? (
-                        <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold tabular-nums text-muted-foreground border border-border">
+                        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tabular-nums text-primary border border-primary/15">
                             {formatNumber(shops.data.length, { locale: AR_LOCALE })} محلات
                         </span>
                     ) : null}
                 </div>
 
                 {shops.loading ? (
-                    <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {Array.from({ length: 4 }).map((_, i) => (
                             <ShopCardSkeleton key={i} />
                         ))}
@@ -173,9 +173,15 @@ export default function OverviewPage() {
                         message="لما المحلات تتضاف على النظام هتظهر هنا تلقائيًا."
                     />
                 ) : (
-                    <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all">
+                    /* تحسين العرض عبر Grid تفاعلي بدلاً من القائمة التقليدية */
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 transition-all">
                         {shops.data.map((shop, index) => (
-                            <ShopCard key={shop.id || index} shop={shop} index={index} />
+                            <div 
+                                key={shop.id || index}
+                                className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-0.5 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5"
+                            >
+                                <ShopCard shop={shop} index={index} />
+                            </div>
                         ))}
                     </div>
                 )}
@@ -184,7 +190,7 @@ export default function OverviewPage() {
             {/* Comparison Chart Section */}
             <section
                 aria-label="مقارنة المبيعات والرسوم البيانية"
-                className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm space-y-6"
+                className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-xs space-y-6"
             >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-4">
                     <div>
@@ -199,7 +205,7 @@ export default function OverviewPage() {
                         {[55, 80, 40, 65].map((h, i) => (
                             <div
                                 key={i}
-                                className="w-full max-w-16 animate-pulse rounded-t-lg bg-muted/80"
+                                className="w-full max-w-16 animate-pulse rounded-t-xl bg-muted/80"
                                 style={{ height: `${h}%` }}
                             />
                         ))}
