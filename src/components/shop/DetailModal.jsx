@@ -4,8 +4,10 @@ import { X, AlertCircle } from 'lucide-react';
 /**
  * Generic detail modal. Renders the section's `renderDetail(item)` body.
  * Closes on backdrop click, the X button, or Escape.
+ * `actions`: optional buttons shown in the header next to the close button
+ * (e.g. "طباعة" on invoices).
  */
-export default function DetailModal({ open, onClose, title, loading, error, children }) {
+export default function DetailModal({ open, onClose, title, loading, error, actions, children }) {
     useEffect(() => {
         if (!open) return undefined;
         const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -21,7 +23,7 @@ export default function DetailModal({ open, onClose, title, loading, error, chil
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-md animate-in fade-in-0 duration-200 sm:items-center sm:p-4"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 animate-in sm:backdrop-blur-sm fade-in-0 duration-200 sm:items-center sm:p-4"
             role="dialog"
             aria-modal="true"
             onClick={onClose}
@@ -40,6 +42,8 @@ export default function DetailModal({ open, onClose, title, loading, error, chil
                     <h2 className="font-display text-base font-bold text-foreground sm:text-lg dir-rtl">
                         {title}
                     </h2>
+                    <div className="flex items-center gap-2">
+                    {actions && !loading && !error ? actions : null}
                     <button
                         type="button"
                         onClick={onClose}
@@ -48,6 +52,7 @@ export default function DetailModal({ open, onClose, title, loading, error, chil
                     >
                         <X className="h-4 w-4" strokeWidth={2.5} />
                     </button>
+                    </div>
                 </div>
 
                 {/* Modal Body */}

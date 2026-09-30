@@ -27,10 +27,13 @@ export default defineConfig({
         // Matches the login page's full-screen ink background (bg-primary,
         // see LoginPage.jsx) so standalone launch has no flash of a
         // different color before the app shell mounts.
-        background_color: '#231f1a',
+        // Splash screen = the app's page background (slate-50); status bar =
+        // the dark header colour (slate-900). The old warm beige/brown values
+        // came from a template and matched nothing in this palette.
+        background_color: '#f8fafc',
         // Matches the authenticated app shell's warm paper background —
         // where most real usage time is spent (see index.css).
-        theme_color: '#f6f4ef',
+        theme_color: '#0f172a',
         icons: [
           { src: '/icons/icon-72.png', sizes: '72x72', type: 'image/png', purpose: 'any' },
           { src: '/icons/icon-96.png', sizes: '96x96', type: 'image/png', purpose: 'any' },
@@ -49,6 +52,9 @@ export default defineConfig({
         // performance, not offline-first: the app still needs the network
         // for every real screen of shop data.
         globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        // Demo-mode data is never needed in production — don't make every
+        // installed dashboard download it in the background.
+        globIgnores: ['**/mockData-*.js'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
@@ -84,6 +90,30 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        // Long-lived, rarely-changing libraries get their own chunks: they
+        // stay cached in the browser (and the service worker) across app
+        // deploys, so an update only re-downloads the app's own code.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (/[\\/]node_modules[\\/](recharts|d3-[^\\/]+|victory-vendor|internmap|decimal\.js-light|recharts-scale|react-smooth|eventemitter3|lodash|fast-equals)[\\/]/.test(id)) {
+            return 'charts';
+          }
+          // The .xlsx zip writer is only needed when the owner clicks
+          // "تصدير": leave it with the lazily-loaded exporters chunk.
+          if (/[\\/]node_modules[\\/]fflate[\\/]/.test(id)) return undefined;
+          // Every other library (React, router, helmet, icons, and small
+          // shared helpers like prop-types / react-is) goes into ONE vendor
+          // chunk. Assigning them explicitly matters: otherwise Rollup folds
+          // helpers that recharts also uses into the charts chunk, and the
+          // login page would end up downloading the whole chart library.
+          return 'vendor';
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'), // هنا @ بتمثل src

@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap');
+/* Fonts (Cairo + Tajawal) are linked from index.html with preconnect, not
+   @import-ed here: an @import inside CSS can only start downloading after
+   this whole stylesheet has arrived, which delayed text on slow networks. */
 
 @tailwind base;
 @tailwind components;
@@ -7,7 +9,7 @@
 body {
   font-family: "Tajawal", "Cairo", system-ui, sans-serif;
   overflow-x: clip;
-  background-color: #f8fafc; /* Clean Light Slate Background */
+  background-color: hsl(var(--background)); /* slate-50 in light mode — follows the theme tokens */
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
 }
@@ -83,3 +85,68 @@ body {
     --sidebar-ring: 239 84% 67%;
   }
 }
+/* Thin top progress bar shown while a page's code chunk downloads (PageFallback). */
+@keyframes page-progress {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-300%); }
+}
+
+/* ───────────────────────── Printed invoice ─────────────────────────
+   InvoicePrint renders into <div id="print-root"> (end of <body>).
+   On screen it's invisible; when printing, it is the ONLY thing printed.
+   Plain CSS (not Tailwind utilities) so the paper layout is exact and
+   independent of the screen theme (always black on white). */
+#print-root { display: none; }
+
+@media print {
+  @page { margin: 6mm; }
+  html, body { background: #fff !important; }
+  body > *:not(#print-root) { display: none !important; }
+  #print-root { display: block !important; }
+}
+
+.inv {
+  width: 100%;
+  max-width: 80mm;               /* thermal-receipt width; centred on A4 */
+  margin: 0 auto;
+  color: #000;
+  background: #fff;
+  font-family: "Tajawal", "Cairo", system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.inv-header { text-align: center; padding-bottom: 8px; border-bottom: 1px dashed #000; }
+.inv-shop { font-family: "Cairo", "Tajawal", sans-serif; font-size: 18px; font-weight: 800; margin: 0; }
+.inv-contact { margin: 2px 0 0; font-size: 11px; }
+.inv-title {
+  display: inline-block; margin: 8px 0 0; padding: 2px 12px;
+  border: 1.5px solid #000; border-radius: 999px; font-weight: 700; font-size: 12px;
+}
+.inv-meta { padding: 8px 0; border-bottom: 1px dashed #000; }
+.inv-meta-row { display: flex; justify-content: space-between; gap: 8px; padding: 1px 0; }
+.inv-muted { color: #333; }
+.inv-strong { font-weight: 700; }
+.inv-table { width: 100%; border-collapse: collapse; margin: 6px 0; }
+.inv-table th {
+  font-size: 11px; font-weight: 700; padding: 4px 2px;
+  border-top: 1.5px solid #000; border-bottom: 1.5px solid #000;
+}
+.inv-table td { padding: 4px 2px; border-bottom: 1px dotted #999; vertical-align: top; }
+.inv-col-name { text-align: right; }
+.inv-col-num { text-align: left; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.inv-item-name { display: block; font-weight: 600; }
+.inv-item-code { display: block; font-size: 10px; color: #444; }
+.inv-totals { padding: 4px 0 8px; border-bottom: 1px dashed #000; }
+.inv-grand {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 6px 0; padding: 6px 8px;
+  background: #000; color: #fff; border-radius: 4px;
+  font-family: "Cairo", "Tajawal", sans-serif; font-size: 16px; font-weight: 800;
+}
+.inv-status { text-align: center; margin: 6px 0 0; font-weight: 700; font-size: 11px; }
+.inv-notes { margin: 6px 0; font-size: 11px; }
+.inv-footer { text-align: center; padding-top: 8px; }
+.inv-thanks { margin: 0 0 4px; font-weight: 700; }
+.inv-printed { margin: 0; font-size: 9px; color: #555; }

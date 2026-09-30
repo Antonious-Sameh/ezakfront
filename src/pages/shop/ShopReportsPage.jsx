@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Head';
 import { useParams } from 'react-router-dom';
-import { format, subDays } from 'date-fns';
+import { subDays, toISODate } from '@/lib/dates';
 import {
     Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
@@ -11,7 +11,7 @@ import { formatNumber } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { ErrorState } from '@/components/StateViews';
-import { AR_LOCALE, PAYMENT_LABELS } from '@/lib/mockData';
+import { AR_LOCALE, PAYMENT_LABELS } from '@/lib/constants';
 
 const num = (v) => formatNumber(v, { locale: AR_LOCALE });
 const compact = (v) => formatNumber(v, { locale: AR_LOCALE, notation: 'compact', maximumFractionDigits: 1 });
@@ -24,7 +24,7 @@ const PERIODS = [
 function periodRange(id) {
     const to = new Date();
     const from = id === 'today' ? to : subDays(to, id === 'week' ? 6 : 29);
-    return { from: format(from, 'yyyy-MM-dd'), to: format(to, 'yyyy-MM-dd') };
+    return { from: toISODate(from), to: toISODate(to) };
 }
 
 function StatCard({ icon: Icon, label, value, sub, tone }) {
@@ -73,21 +73,27 @@ export default function ShopReportsPage() {
     const [period, setPeriod] = useState('month');
     const range = useMemo(() => periodRange(period), [period]);
 
-    const fetcher = useCallback(() => {
+    const fetcher = useCallback((signal) => {
         const p = { from: range.from, to: range.to };
+        const o = { signal };
         return Promise.all([
-            api.getShopReport(token, shopId, 'sales', p),
-            api.getShopReport(token, shopId, 'purchases', p),
-            api.getShopReport(token, shopId, 'profit', p),
-            api.getShopReport(token, shopId, 'inventory', p),
-            api.getShopReport(token, shopId, 'customers', p),
-            api.getShopReport(token, shopId, 'suppliers', p),
+            api.getShopReport(token, shopId, 'sales', p, o),
+            api.getShopReport(token, shopId, 'purchases', p, o),
+            api.getShopReport(token, shopId, 'profit', p, o),
+            api.getShopReport(token, shopId, 'inventory', p, o),
+            api.getShopReport(token, shopId, 'customers', p, o),
+            api.getShopReport(token, shopId, 'suppliers', p, o),
         ]).then(([sales, purchases, profit, inventory, customers, suppliers]) => ({
             sales: sales.data, purchases: purchases.data, profit: profit.data,
             inventory: inventory.data, customers: customers.data, suppliers: suppliers.data,
         }));
     }, [token, shopId, range]);
-    const { data, loading, error, refetch } = useApiQuery(fetcher);
+    // keepPrevious: switching period keeps the current numbers on screen
+    // (dimmed by the browser's own repaint) instead of blanking the page.
+    const { data, loading, error, refetch } = useApiQuery(fetcher, {
+        key: `reports:${shopId}:${range.from}:${range.to}`,
+        keepPrevious: true,
+    });
 
     return (
         <div className="flex flex-col gap-6 dir-rtl">

@@ -1,5 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api, setUnauthorizedHandler } from '@/lib/api';
+import { clearQueryCache } from '@/hooks/useApiQuery';
+import { shopSettingsCache } from '@/lib/shopSettingsCache';
 
 const STORAGE_KEY = 'system5_token';
 
@@ -11,6 +13,8 @@ export function AuthProvider({ children }) {
 
 	const logout = useCallback(() => {
 		sessionStorage.removeItem(STORAGE_KEY);
+		clearQueryCache(); // no shop data survives the session in memory
+		shopSettingsCache.clear();
 		setToken(null);
 	}, []);
 

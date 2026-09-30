@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Head';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { CircleAlert, Landmark, Loader2, Eye, EyeOff, Lock, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';

@@ -7,8 +7,9 @@
 		"dev": "vite --host :: --port 3000",
 		"build": "vite build",
 		"start": "vite preview --port 3000",
-		"lint": "eslint . --quiet; lint_status=$?; eslint \"src/**/*.jsx\" --config eslint.config.mjs --format ./eslint.unicode-escapes-formatter.mjs --no-error-on-unmatched-pattern; exit $lint_status",
-		"lint:warn": "eslint ."
+		"lint": "eslint .",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.2",
@@ -44,14 +45,13 @@
 		"cmdk": "^1.1.1",
 		"date-fns": "^4.1.0",
 		"embla-carousel-react": "^8.6.0",
-		"framer-motion": "^11.15.0",
+		"fflate": "^0.8.3",
 		"input-otp": "^1.4.2",
 		"lucide-react": "^0.469.0",
 		"next-themes": "^0.4.6",
 		"react": "^18.3.1",
 		"react-day-picker": "^9.14.0",
 		"react-dom": "^18.3.1",
-		"react-helmet": "^6.1.0",
 		"react-hook-form": "^7.71.2",
 		"react-resizable-panels": "^4.7.2",
 		"react-router-dom": "^7.18.2",
@@ -67,6 +67,10 @@
 		"@babel/parser": "^7.26.3",
 		"@babel/traverse": "^7.26.4",
 		"@babel/types": "^7.26.3",
+		"@testing-library/dom": "^10.4.2",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/react": "^16.3.3",
+		"@testing-library/user-event": "^14.6.7",
 		"@types/node": "^20.17.10",
 		"@types/react": "^18.3.18",
 		"@types/react-dom": "^18.3.5",
@@ -79,10 +83,12 @@
 		"eslint-plugin-react": "^7.37.5",
 		"eslint-plugin-react-hooks": "^5.1.0",
 		"globals": "^15.14.0",
+		"jsdom": "^26.1.0",
 		"postcss": "^8.5.23",
 		"tailwindcss": "^3.4.17",
 		"terser": "^5.37.0",
 		"vite": "^7.3.6",
-		"vite-plugin-pwa": "^1.3.0"
+		"vite-plugin-pwa": "^1.3.0",
+		"vitest": "^3.2.7"
 	}
 }

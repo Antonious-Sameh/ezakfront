@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Head';
 import { Link, useParams } from 'react-router-dom';
 import { 
     AlertTriangle, 
@@ -17,9 +17,16 @@ import { formatNumber } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { ErrorState } from '@/components/StateViews';
-import { AR_LOCALE } from '@/lib/mockData';
+import { AR_LOCALE } from '@/lib/constants';
 
 const num = (v) => formatNumber(v ?? 0, { locale: AR_LOCALE });
+/** Money KPI: amount + small "ج.م", same treatment as everywhere else. */
+const moneyValue = (v) => (
+    <>
+        {formatNumber(v ?? 0, { locale: AR_LOCALE, maximumFractionDigits: 2 })}
+        <span className="ms-1 text-sm font-medium text-muted-foreground">ج.م</span>
+    </>
+);
 
 function StatCard({ icon: Icon, label, value, hint, tone, className = "" }) {
     return (
@@ -59,11 +66,11 @@ export default function ShopOverviewPage() {
     const { shopId } = useParams();
 
     const fetcher = useCallback(
-        () => api.getShopOverview(token, shopId).then((res) => res.data), 
+        (signal) => api.getShopOverview(token, shopId, { signal }).then((res) => res.data),
         [token, shopId]
     );
 
-    const { data, loading, error, refetch } = useApiQuery(fetcher);
+    const { data, loading, error, refetch } = useApiQuery(fetcher, { key: `overview:${shopId}` });
 
     return (
         <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
@@ -98,24 +105,24 @@ export default function ShopOverviewPage() {
                         <StatCard 
                             icon={Receipt} 
                             label="مبيعات اليوم" 
-                            value={num(data.todaySales)} 
+                            value={moneyValue(data.todaySales)} 
                             hint={`${num(data.todayOrders)} فاتورة اليوم`} 
                         />
                         <StatCard 
                             icon={CalendarDays} 
                             label="مبيعات الشهر" 
-                            value={num(data.monthSales)} 
+                            value={moneyValue(data.monthSales)} 
                         />
                         <StatCard 
                             icon={TrendingUp} 
                             label="ربح اليوم" 
-                            value={num(data.todayProfit)} 
+                            value={moneyValue(data.todayProfit)} 
                             tone="text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" 
                         />
                         <StatCard 
                             icon={Coins} 
                             label="رصيد الكاشير" 
-                            value={num(data.cashboxBalance)} 
+                            value={moneyValue(data.cashboxBalance)} 
                             tone={data.cashboxBalance < 0 
                                 ? 'text-destructive bg-destructive/10' 
                                 : 'text-amber-600 dark:text-amber-400 bg-amber-500/10'

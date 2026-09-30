@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import ResourceListPage from '@/components/shop/ResourceListPage';
 import { SECTION_CONFIGS } from '@/components/shop/sectionConfigs';
-import { AR_LOCALE } from '@/lib/mockData';
+import { AR_LOCALE } from '@/lib/constants';
 import { 
     ArrowDownLeft, 
     ArrowUpRight, 
@@ -18,17 +18,23 @@ import {
 } from 'lucide-react';
 
 const num = (v) => formatNumber(v, { locale: AR_LOCALE });
+const money = (v) => (
+    <>
+        {formatNumber(v, { locale: AR_LOCALE, maximumFractionDigits: 2 })}
+        <span className="ms-1 text-xs font-medium text-muted-foreground">ج.م</span>
+    </>
+);
 
 /** Small summary band shown above the cashbox / expenses lists. */
 function SummaryBand({ shopId, kind }) {
     const { token } = useAuth();
-    const fetcher = useCallback(() => {
+    const fetcher = useCallback((signal) => {
         const params = {};
         return kind === 'cashbox'
-            ? api.getCashboxSummary(token, shopId, params).then((res) => res.data)
-            : api.getExpensesSummary(token, shopId, params).then((res) => res.data);
+            ? api.getCashboxSummary(token, shopId, params, { signal }).then((res) => res.data)
+            : api.getExpensesSummary(token, shopId, params, { signal }).then((res) => res.data);
     }, [token, shopId, kind]);
-    const { data, loading } = useApiQuery(fetcher);
+    const { data, loading } = useApiQuery(fetcher, { key: `summary:${kind}:${shopId}` });
 
     if (loading || !data) {
         return (
@@ -48,25 +54,25 @@ function SummaryBand({ shopId, kind }) {
             <div className="mb-6 grid grid-cols-2 gap-3.5 sm:grid-cols-4">
                 <SummaryItem 
                     label="إجمالي داخل" 
-                    value={num(data.totalIn)} 
+                    value={money(data.totalIn)} 
                     tone="emerald" 
                     icon={ArrowDownLeft}
                 />
                 <SummaryItem 
                     label="إجمالي خارج" 
-                    value={num(data.totalOut)} 
+                    value={money(data.totalOut)} 
                     tone="destructive" 
                     icon={ArrowUpRight}
                 />
                 <SummaryItem 
                     label="الرصيد الحالي" 
-                    value={num(data.balance)} 
+                    value={money(data.balance)} 
                     tone={data.balance < 0 ? 'destructive' : 'primary'} 
                     icon={Wallet}
                 />
                 <SummaryItem 
                     label="داخل اليوم" 
-                    value={num(data.todayIn)} 
+                    value={money(data.todayIn)} 
                     tone="emerald" 
                     icon={Calendar}
                 />
@@ -78,13 +84,13 @@ function SummaryBand({ shopId, kind }) {
         <div className="mb-6 grid grid-cols-2 gap-3.5 sm:grid-cols-3">
             <SummaryItem 
                 label="إجمالي المصروفات" 
-                value={num(data.total)} 
+                value={money(data.total)} 
                 tone="destructive" 
                 icon={TrendingDown}
             />
             <SummaryItem 
                 label="مصروفات الشهر" 
-                value={num(data.thisMonth)} 
+                value={money(data.thisMonth)} 
                 tone="accent" 
                 icon={Calendar}
             />

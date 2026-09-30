@@ -8,7 +8,7 @@
  * by setting VITE_API_BASE_URL and every call below is bypassed.
  */
 
-const AR_LOCALE = 'ar-EG';
+import { AR_LOCALE, PAYMENT_LABELS, ACTIVITY_LABELS_REAL } from './constants';
 
 // --- seeded RNG so each shop gets stable, distinct data ---
 function hashSeed(str) {
@@ -51,26 +51,25 @@ const CUSTOMER_NAMES = [
 ];
 const SUPPLIER_NAMES = ['شركة الدلتا للتوزيع', 'مؤسسة النيل للتجارة', 'شركة الأهرام', 'مورد الوادي', 'شركة الصفا'];
 const CASHIER_NAMES = ['مدير المحل', 'أمين الصندوق', 'البائع الأول', 'البائع الثاني'];
-const PAYMENT_TYPES = ['cash', 'card', 'credit'];
-const PAYMENT_LABELS = { cash: 'نقدي', card: 'بطاقة', credit: 'آجل' };
+const PAYMENT_TYPES = ['cash', 'credit']; // the only two the real shops use
 const EXPENSE_CATEGORIES = ['إيجار', 'كهرباء', 'رواتب', 'صيانة', 'نقل', 'أخرى'];
 const CASHBOX_CATEGORIES = ['مبيعات', 'مشتريات', 'إيداع', 'سحب', 'مصروف', 'أخرى'];
 // Used only by the mock-data generator below (demo/preview mode with no
 // real backend) — kept separate from ACTIVITY_LABELS_REAL because the mock
 // feed's made-up variety doesn't need to match the real backend's actual
 // enum (see ActivityLog's ACTIVITY_TYPES in Shops 1-4's models/constants.js).
-const ACTIVITY_TYPES = ['sale', 'purchase', 'stock', 'login', 'customer', 'expense'];
+const ACTIVITY_TYPES = ['sale', 'purchase', 'product', 'customer', 'expense', 'cash']; // real ACTIVITY_TYPES only
 const ACTIVITY_LABELS = {
 	sale: 'بيع', purchase: 'شراء', stock: 'مخزون', login: 'تسجيل دخول',
 	customer: 'عميل', expense: 'مصروف',
 };
-// The real backend's activity `type` values (see Shops 1-4's
-// src/models/constants.js ACTIVITY_TYPES) — used by sectionConfigs.jsx for
-// the actual filter dropdown and label rendering against live API data.
-const ACTIVITY_LABELS_REAL = {
-	product: 'منتج', customer: 'عميل', supplier: 'مورد', sale: 'بيع',
-	purchase: 'شراء', expense: 'مصروف', cash: 'حركة نقدية', settings: 'إعدادات',
-};
+
+function mockPayment(rng, total) {
+	const r = rng();
+	const paid = r > 0.3 ? total : r > 0.15 ? Math.round(total / 2) : 0;
+	const remaining = total - paid;
+	return { paid, remaining, paymentStatus: remaining <= 0 ? 'paid' : paid > 0 ? 'partial' : 'unpaid' };
+}
 
 function daysAgo(rng, maxDays = 60) {
 	const d = new Date();
@@ -142,26 +141,32 @@ function buildShop(shopId, index) {
 		const items = Array.from({ length: itemCount }, () => {
 			const p = pick(rng, products);
 			const qty = randInt(rng, 1, 5);
-			return { productName: p.name, qty, price: p.price, total: p.price * qty };
+			return { productName: p.name, code: p.sku, qty, price: p.price, cost: p.cost, total: p.price * qty };
 		});
+		// Same shape as the real backend (Phase 2): subtotal − discount = total,
+		// no tax, walk-in customers always pay cash in full.
 		const subtotal = items.reduce((s, it) => s + it.total, 0);
 		const discount = rng() > 0.8 ? randInt(rng, 5, 50) : 0;
-		const tax = Math.round(subtotal * 0.14);
-		const total = subtotal - discount + tax;
+		const total = subtotal - discount;
+		const customer = rng() > 0.3 ? pick(rng, customers) : null;
+		const paymentType = customer ? pick(rng, PAYMENT_TYPES) : 'cash';
+		const payment = paymentType === 'cash'
+			? { paid: total, remaining: 0, paymentStatus: 'paid' }
+			: mockPayment(rng, total);
 		return {
 			id: `sale-${shopId}-${i + 1}`,
 			invoiceNo: `INV-${1000 + i}`,
-			customerId: rng() > 0.3 ? pick(rng, customers).id : null,
-			customerName: rng() > 0.3 ? pick(rng, customers).name : 'عميل نقدي',
+			customerId: customer ? customer.id : null,
+			customerName: customer ? customer.name : 'عميل نقدي',
 			date: daysAgo(rng, 60),
 			subtotal,
 			discount,
-			tax,
 			total,
-			paymentType: pick(rng, PAYMENT_TYPES),
-			cashier: pick(rng, CASHIER_NAMES),
+			profit: items.reduce((s, it) => s + (it.price - it.cost) * it.qty, 0) - discount,
+			paymentType,
 			items,
-			status: rng() > 0.95 ? 'returned' : 'completed',
+			status: 'completed',
+			...payment,
 		};
 	}).sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -170,19 +175,24 @@ function buildShop(shopId, index) {
 		const items = Array.from({ length: itemCount }, () => {
 			const p = pick(rng, products);
 			const qty = randInt(rng, 5, 40);
-			return { productName: p.name, qty, cost: p.cost, total: p.cost * qty };
+			return { productName: p.name, code: p.sku, qty, price: p.cost, cost: p.cost, total: p.cost * qty };
 		});
 		const total = items.reduce((s, it) => s + it.total, 0);
+		const supplier = pick(rng, suppliers);
+		const paymentType = pick(rng, PAYMENT_TYPES);
 		return {
 			id: `pur-${shopId}-${i + 1}`,
 			invoiceNo: `PO-${2000 + i}`,
-			supplierId: pick(rng, suppliers).id,
-			supplierName: pick(rng, suppliers).name,
+			supplierId: supplier.id,
+			supplierName: supplier.name,
 			date: daysAgo(rng, 90),
 			subtotal: total,
+			discount: 0,
 			total,
+			paymentType,
 			items,
-			status: pick(rng, ['received', 'pending', 'received', 'received']),
+			status: 'received',
+			...(paymentType === 'cash' ? { paid: total, remaining: 0, paymentStatus: 'paid' } : mockPayment(rng, total)),
 		};
 	}).sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -217,12 +227,20 @@ function buildShop(shopId, index) {
 		const map = {
 			sale: 'تم تسجيل فاتورة بيع جديدة',
 			purchase: 'تم تسجيل فاتورة مشتريات',
-			stock: 'تم تعديل مخزون منتج',
-			login: 'تم تسجيل الدخول للنظام',
+			product: 'تم تعديل مخزون منتج',
 			customer: 'تم إضافة عميل جديد',
 			expense: 'تم تسجيل مصروف',
+			cash: 'تم تسجيل حركة نقدية يدوية',
 		};
 		a.description = map[a.type] || 'نشاط';
+		// Mirrors the real backend: invoice activities link to their invoice.
+		const linked = a.type === 'sale' ? pick(rng, sales) : a.type === 'purchase' ? pick(rng, purchases) : null;
+		if (linked) {
+			a.ref = { entity: a.type === 'sale' ? 'sales' : 'purchases', id: linked.id };
+			a.amount = linked.total;
+		} else {
+			a.ref = null;
+		}
 	});
 
 	const ds = { products, customers, suppliers, sales, purchases, cashbox, expenses, activity };
@@ -308,7 +326,7 @@ function filterList(ds, entity, p) {
 	if (dateField && (p.from || p.to)) {
 		list = list.filter((row) => inDateRange(row[dateField], p.from, p.to));
 	}
-	if (entity === 'sales' && p.extras.paymentType && p.extras.paymentType !== 'all') {
+	if ((entity === 'sales' || entity === 'purchases') && p.extras.paymentType && p.extras.paymentType !== 'all') {
 		list = list.filter((row) => row.paymentType === p.extras.paymentType);
 	}
 	if (entity === 'sales' && p.extras.status && p.extras.status !== 'all') {
@@ -516,6 +534,31 @@ export const mock = {
 	getExpensesSummary: (shopId, params) => expensesSummary(shopId, shopIndex(shopId), parseParams(params)),
 
 	getShopReport: (shopId, type, params) => buildReport(shopId, shopIndex(shopId), type, parseParams(params)),
+
+	exportShopList: (shopId, entity, params) => {
+		const res = mock.getShopList(shopId, entity, { ...params, page: 1, limit: 100000 });
+		return { success: true, data: res.data, total: res.data.length, truncated: false, maxRows: 3000 };
+	},
+
+	getShopSettings: (shopId) => {
+		const i = shopIndex(shopId);
+		return {
+			success: true,
+			data: {
+				shopName: SHOP_NAMES[i % SHOP_NAMES.length],
+				ownerName: '',
+				phone: '0100000000' + i,
+				address: SHOP_AREAS[i % SHOP_AREAS.length],
+				invoiceFooter: 'شكراً لتعاملكم معنا',
+			},
+		};
+	},
+
+	getExpenseReasons: (shopId) => {
+		const ds = buildShop(shopId, shopIndex(shopId));
+		const reasons = [...new Set(ds.expenses.map((e) => e.category))].sort((a, b) => a.localeCompare(b, 'ar'));
+		return { success: true, data: reasons, supported: true };
+	},
 };
 
 export { PAYMENT_LABELS, ACTIVITY_LABELS, ACTIVITY_LABELS_REAL, AR_LOCALE };

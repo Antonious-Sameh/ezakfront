@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { Suspense } from 'react';
+import PageFallback from '@/components/PageFallback';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Home, LogOut, Store, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -19,7 +20,7 @@ export default function AppLayout() {
     return (
         <div className="min-h-dvh bg-slate-50/80 text-slate-900 font-sans antialiased selection:bg-indigo-500 selection:text-white">
             {/* Clean Sticky Header */}
-            <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/80 backdrop-blur-md transition-all">
+            <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white md:bg-white/80 md:backdrop-blur-md transition-all">
                 <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-3">
                         <AppMark />
@@ -87,12 +88,14 @@ export default function AppLayout() {
 
                 {/* Main Page Content */}
                 <main className="min-w-0 flex-1 pb-24 pt-6 md:pb-12">
-                    <Outlet />
+                    <Suspense fallback={<PageFallback />}>
+                        <Outlet />
+                    </Suspense>
                 </main>
             </div>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/90 backdrop-blur-md pb-[env(safe-area-inset-bottom)] md:hidden">
+            <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
                 <div className="mx-auto flex max-w-md items-center justify-around px-2">
                     {NAV_ITEMS.map((item) => (
                         <NavLink

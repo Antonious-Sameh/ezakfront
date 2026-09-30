@@ -1,7 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ShopLayout, ShopOverviewPage } from '@/routes/lazyPages';
+import { preloadOnIntent } from '@/routes/intent';
+
 import { ChevronLeft, Package, CheckCircle2 } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
+
+// Start loading the shop screen's code as soon as a card is hovered/touched.
+const shopIntent = preloadOnIntent(() => Promise.all([ShopLayout.preload(), ShopOverviewPage.preload()]));
 
 const AR_LOCALE = 'ar-EG';
 
@@ -16,7 +22,8 @@ export default function ShopCard({ shop, index }) {
     return (
         <Link
             to={`/shops/${shop.id}`}
-            className={`group relative flex flex-col gap-4 border-s-4 bg-card px-5 py-4 transition-all duration-200 hover:bg-accent/[0.04] sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 ${
+            {...shopIntent}
+            className={`group relative flex flex-col gap-4 border-s-4 bg-card px-5 py-4 transition-colors duration-200 hover:bg-accent/[0.04] sm:px-6 ${
                 isOnline 
                     ? 'border-s-emerald-600 dark:border-s-emerald-500' 
                     : 'border-s-muted-foreground/30'
@@ -50,7 +57,9 @@ export default function ShopCard({ shop, index }) {
             </div>
 
             {/* Right/End Side: Stock Alert + Sales + Action */}
-            <div className="flex items-center justify-between gap-4 border-t border-border/40 pt-3 sm:justify-end sm:border-0 sm:pt-0">
+            {/* Stacked at every width: the cards sit in a 2-column grid, where a
+                single row squeezed the shop name down to "محل الـ…". */}
+            <div className="flex items-center justify-between gap-4 border-t border-border/40 pt-3">
                 {/* Stock Status Badge */}
                 {hasLowStock ? (
                     <span className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive dark:bg-destructive/20">
@@ -65,9 +74,9 @@ export default function ShopCard({ shop, index }) {
                 )}
 
                 {/* Sales Figure */}
-                <div className="text-end">
+                <div className="ms-auto text-end">
                     <span className="block text-[11px] font-medium text-muted-foreground">مبيعات اليوم</span>
-                    <span className="font-display text-lg font-bold tabular-nums text-foreground sm:text-xl">
+                    <span className="whitespace-nowrap font-display text-lg font-bold tabular-nums text-foreground sm:text-xl">
                         {formatNumber(shop.todaySales, { locale: AR_LOCALE })} <span className="text-xs font-normal text-muted-foreground">ج.م</span>
                     </span>
                 </div>
@@ -86,7 +95,7 @@ export default function ShopCard({ shop, index }) {
 
 export function ShopCardSkeleton() {
     return (
-        <div className="flex flex-col gap-4 border-s-4 border-s-muted bg-card px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6">
+        <div className="flex flex-col gap-4 border-s-4 border-s-muted bg-card px-5 py-4 sm:px-6">
             <div className="flex items-center gap-4">
                 <div className="hidden h-4 w-6 animate-pulse rounded bg-muted sm:block" />
                 <div className="space-y-2">

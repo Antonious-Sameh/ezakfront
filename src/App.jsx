@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
+import PageFallback from './components/PageFallback';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import AppLayout from './components/layout/AppLayout';
-import ShopLayout from './components/shop/ShopLayout';
-import LoginPage from './pages/LoginPage';
-import OverviewPage from './pages/OverviewPage';
-import ShopOverviewPage from './pages/shop/ShopOverviewPage';
-import ShopSectionPage from './pages/shop/ShopSectionPage';
-import ShopReportsPage from './pages/shop/ShopReportsPage';
+// Every page and layout is its own lazily-loaded chunk (see routes/lazyPages.js).
+import {
+	AppLayout,
+	ShopLayout,
+	LoginPage,
+	OverviewPage,
+	ShopOverviewPage,
+	ShopSectionPage,
+	ShopReportsPage,
+} from './routes/lazyPages';
 
 function RequireAuth({ children }) {
 	const { isAuthenticated } = useAuth();
@@ -27,6 +31,10 @@ function App() {
 			<AuthProvider>
 				<ScrollToTop />
 				<Toaster position="top-center" dir="rtl" richColors />
+				{/* Outer boundary: only hit on the very first load of a layout (or the
+				    login page). Inner pages have their own boundary inside each layout's
+				    <Outlet>, so the header/sidebar stay on screen while a page loads. */}
+				<Suspense fallback={<PageFallback fullScreen />}>
 				<Routes>
 					<Route path="/login" element={<LoginPage />} />
 					<Route
@@ -53,6 +61,7 @@ function App() {
 					</Route>
 					<Route path="*" element={<Navigate to="/" replace />} />
 				</Routes>
+				</Suspense>
 			</AuthProvider>
 		</Router>
 	);

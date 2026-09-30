@@ -1,13 +1,15 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { Helmet } from 'react-helmet';
-import { format, subDays } from 'date-fns';
-import { Store, RefreshCw, ChevronLeft, ArrowLeft, ShoppingBag } from 'lucide-react';
+import React, { Suspense, lazy, useCallback, useMemo, useState } from 'react';
+import { Helmet } from '@/components/Head';
+import { subDays, toISODate } from '@/lib/dates';
+import { Store } from 'lucide-react';
 import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import ShopCard, { ShopCardSkeleton } from '@/components/ShopCard';
-import SalesCompareChart from '@/components/SalesCompareChart';
+// The chart library (recharts) is the single biggest dependency; loading it
+// separately lets the shop cards appear first on a slow connection.
+const SalesCompareChart = lazy(() => import('@/components/SalesCompareChart'));
 import { EmptyState, ErrorState } from '@/components/StateViews';
 
 const AR_LOCALE = 'ar-EG';
@@ -57,8 +59,8 @@ export default function OverviewPage() {
         const to = new Date();
         const from = period === 'today' ? to : subDays(to, period === 'week' ? 6 : 29);
         return { 
-            from: format(from, 'yyyy-MM-dd'), 
-            to: format(to, 'yyyy-MM-dd') 
+            from: toISODate(from), 
+            to: toISODate(to) 
         };
     }, [period]);
 
@@ -68,17 +70,17 @@ export default function OverviewPage() {
 
     // Fetchers مع تحسين الأداء عبر useCallback
     const shopsFetcher = useCallback(
-        () => api.getShops(token).then((res) => res.data), 
+        (signal) => api.getShops(token, { signal }).then((res) => res.data),
         [token]
     );
     
     const compareFetcher = useCallback(
-        () => api.getCompareReport(token, range.from, range.to).then((res) => res.data),
+        (signal) => api.getCompareReport(token, range.from, range.to, { signal }).then((res) => res.data),
         [token, range.from, range.to],
     );
 
-    const shops = useApiQuery(shopsFetcher);
-    const compare = useApiQuery(compareFetcher);
+    const shops = useApiQuery(shopsFetcher, { key: 'shops' });
+    const compare = useApiQuery(compareFetcher, { key: `compare:${range.from}:${range.to}`, keepPrevious: true });
 
     return (
         <div className="flex flex-col gap-6 sm:gap-8 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 dir-rtl">
@@ -120,7 +122,8 @@ export default function OverviewPage() {
                                     إجمالي مبيعات المحلات
                                 </p>
                                 <p className="mt-1 font-display text-3xl font-extrabold tracking-tight tabular-nums text-accent sm:text-4xl md:text-5xl">
-                                    {formatNumber(compare.data?.totalSales ?? 0, { locale: AR_LOCALE })}
+                                    {formatNumber(compare.data?.totalSales ?? 0, { locale: AR_LOCALE, maximumFractionDigits: 2 })}
+                                    <span className="ms-2 text-base font-semibold text-primary-foreground/70 sm:text-lg">ج.م</span>
                                 </p>
                             </>
                         )}
@@ -130,7 +133,8 @@ export default function OverviewPage() {
                         <div className="border-t border-primary-foreground/15 pt-4 sm:border-t-0 sm:border-s sm:ps-8 sm:pt-0">
                             <p className="text-xs font-medium text-primary-foreground/70">صافي الربح</p>
                             <p className="mt-1 font-display text-2xl font-bold tabular-nums text-primary-foreground sm:text-3xl">
-                                {formatNumber(compare.data?.totalProfit ?? 0, { locale: AR_LOCALE })}
+                                {formatNumber(compare.data?.totalProfit ?? 0, { locale: AR_LOCALE, maximumFractionDigits: 2 })}
+                                <span className="ms-1.5 text-sm font-medium text-primary-foreground/70">ج.م</span>
                             </p>
                         </div>
                     )}
@@ -223,7 +227,9 @@ export default function OverviewPage() {
                     />
                 ) : (
                     <div className="w-full overflow-x-auto pt-2">
-                        <SalesCompareChart data={compare.data.byShop} />
+                        <Suspense fallback={<div className="h-72 w-full animate-pulse rounded-xl bg-muted/50 sm:h-80" aria-label="جاري تحميل الرسم البياني" />}>
+                            <SalesCompareChart data={compare.data.byShop} />
+                        </Suspense>
                     </div>
                 )}
             </section>
