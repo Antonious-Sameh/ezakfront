@@ -1,29 +1,13 @@
 import React, { useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '@/lib/api';
-import { formatNumber } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import ResourceListPage from '@/components/shop/ResourceListPage';
 import { SECTION_CONFIGS } from '@/components/shop/sectionConfigs';
-import { AR_LOCALE } from '@/lib/constants';
-import { 
-    ArrowDownLeft, 
-    ArrowUpRight, 
-    Wallet, 
-    Calendar, 
-    TrendingDown, 
-    PieChart, 
-    AlertCircle 
-} from 'lucide-react';
-
-const num = (v) => formatNumber(v, { locale: AR_LOCALE });
-const money = (v) => (
-    <>
-        {formatNumber(v, { locale: AR_LOCALE, maximumFractionDigits: 2 })}
-        <span className="ms-1 text-xs font-medium text-muted-foreground">ج.م</span>
-    </>
-);
+import KpiCard from '@/components/analytics/KpiCard';
+import { money as moneyText } from '@/components/analytics/format';
+import { AlertCircle } from 'lucide-react';
 
 /** Small summary band shown above the cashbox / expenses lists. */
 function SummaryBand({ shopId, kind }) {
@@ -49,112 +33,39 @@ function SummaryBand({ shopId, kind }) {
         );
     }
 
+    // Same colour language as the rest of the dashboard: money in = green,
+    // money out / expenses = amber (a cost, not a loss), negative = red.
     if (kind === 'cashbox') {
         return (
-            <div className="mb-6 grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-                <SummaryItem 
-                    label="إجمالي داخل" 
-                    value={money(data.totalIn)} 
-                    tone="emerald" 
-                    icon={ArrowDownLeft}
+            <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <KpiCard
+                    kind={data.balance < 0 ? 'loss' : 'neutral'}
+                    label="الرصيد الحالي"
+                    value={moneyText(data.balance)}
+                    unit="ج.م"
+                    valueClass={data.balance < 0 ? 'text-rose-600' : ''}
                 />
-                <SummaryItem 
-                    label="إجمالي خارج" 
-                    value={money(data.totalOut)} 
-                    tone="destructive" 
-                    icon={ArrowUpRight}
-                />
-                <SummaryItem 
-                    label="الرصيد الحالي" 
-                    value={money(data.balance)} 
-                    tone={data.balance < 0 ? 'destructive' : 'primary'} 
-                    icon={Wallet}
-                />
-                <SummaryItem 
-                    label="داخل اليوم" 
-                    value={money(data.todayIn)} 
-                    tone="emerald" 
-                    icon={Calendar}
+                <KpiCard kind="profit" label="داخل النهارده" value={moneyText(data.todayIn)} unit="ج.م" valueClass="text-emerald-700 dark:text-emerald-400" />
+                <KpiCard kind="cost" label="خارج النهارده" value={moneyText(data.todayOut)} unit="ج.م" valueClass="text-amber-700 dark:text-amber-400" />
+                <KpiCard
+                    kind={data.todayNet < 0 ? 'loss' : 'profit'}
+                    label="صافي النهارده"
+                    value={moneyText(data.todayNet)}
+                    unit="ج.م"
+                    valueClass={data.todayNet < 0 ? 'text-rose-600' : ''}
                 />
             </div>
         );
     }
 
     return (
-        <div className="mb-6 grid grid-cols-2 gap-3.5 sm:grid-cols-3">
-            <SummaryItem 
-                label="إجمالي المصروفات" 
-                value={money(data.total)} 
-                tone="destructive" 
-                icon={TrendingDown}
-            />
-            <SummaryItem 
-                label="مصروفات الشهر" 
-                value={money(data.thisMonth)} 
-                tone="accent" 
-                icon={Calendar}
-            />
-            <SummaryItem 
-                label="عدد التصنيفات" 
-                value={num(Object.keys(data.byCategory || {}).length)} 
-                tone="primary" 
-                icon={PieChart}
-            />
+        <div className="mb-6 grid grid-cols-2 gap-3">
+            <KpiCard kind="cost" label="مصروفات النهارده" value={moneyText(data.todayTotal)} unit="ج.م" />
+            <KpiCard kind="cost" label="مصروفات الشهر" value={moneyText(data.monthTotal)} unit="ج.م" />
         </div>
     );
 }
 
-function SummaryItem({ label, value, tone, icon: Icon }) {
-    const toneStyles = {
-        emerald: {
-            text: 'text-emerald-600 dark:text-emerald-400',
-            bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-            border: 'hover:border-emerald-500/30'
-        },
-        destructive: {
-            text: 'text-rose-600 dark:text-rose-400',
-            bg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
-            border: 'hover:border-rose-500/30'
-        },
-        accent: {
-            text: 'text-amber-600 dark:text-amber-400',
-            bg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-            border: 'hover:border-amber-500/30'
-        },
-        primary: {
-            text: 'text-primary',
-            bg: 'bg-primary/10 text-primary',
-            border: 'hover:border-primary/30'
-        },
-    };
-
-    const currentTone = toneStyles[tone] || {
-        text: 'text-foreground',
-        bg: 'bg-muted text-muted-foreground',
-        border: 'hover:border-border'
-    };
-
-    return (
-        <div className={`group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-4 transition-all duration-200 hover:shadow-sm ${currentTone.border}`}>
-            <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-                    {label}
-                </span>
-                {Icon && (
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110 ${currentTone.bg}`}>
-                        <Icon className="h-4 w-4" />
-                    </div>
-                )}
-            </div>
-            
-            <div className="mt-3 flex items-baseline justify-between">
-                <p className={`font-display text-xl font-bold tracking-tight tabular-nums sm:text-2xl ${currentTone.text}`}>
-                    {value}
-                </p>
-            </div>
-        </div>
-    );
-}
 
 export default function ShopSectionPage() {
     const { shopId, section } = useParams();

@@ -110,7 +110,7 @@ export function InvoiceTotals({ item, totalLabel = 'الإجمالي النها�
     const rows = [];
     if (hasDiscount) {
         rows.push({ key: 'subtotal', label: 'الإجمالي قبل الخصم', value: money(item.subtotal) });
-        rows.push({ key: 'discount', label: 'الخصم', value: <>− {money(item.discount)}</>, cls: 'text-rose-600 dark:text-rose-400' });
+        rows.push({ key: 'discount', label: 'الخصم', value: <>− {money(item.discount)}</>, cls: 'text-amber-700 dark:text-amber-400' });
     }
     return (
         <div className="flex flex-col gap-2.5" data-testid="invoice-totals">
@@ -430,8 +430,8 @@ export const SECTION_CONFIGS = {
             { key: 'type', label: 'النوع', options: [allOption, { value: 'in', label: 'داخل' }, { value: 'out', label: 'خارج' }] },
         ],
         columns: [
-            { key: 'type', label: 'النوع', render: (v) => (v === 'in' ? <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400"><ArrowDownCircle className="h-4 w-4 shrink-0" strokeWidth={2.2} />داخل</span> : <span className="inline-flex items-center gap-1.5 font-semibold text-rose-600 dark:text-rose-400"><ArrowUpCircle className="h-4 w-4 shrink-0" strokeWidth={2.2} />خارج</span>), mobile: true },
-            { key: 'amount', label: 'المبلغ', render: (v, row) => <Money value={v} className={`font-semibold ${row.type === 'in' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`} />, align: 'end', numeric: true, mobile: true },
+            { key: 'type', label: 'النوع', render: (v) => (v === 'in' ? <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400"><ArrowDownCircle className="h-4 w-4 shrink-0" strokeWidth={2.2} />داخل</span> : <span className="inline-flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-400"><ArrowUpCircle className="h-4 w-4 shrink-0" strokeWidth={2.2} />خارج</span>), mobile: true },
+            { key: 'amount', label: 'المبلغ', render: (v, row) => <Money value={v} className={`font-semibold ${row.type === 'in' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`} />, align: 'end', numeric: true, mobile: true },
             { key: 'date', label: 'التاريخ', render: shortDate, mobile: true },
             { key: 'category', label: 'البيان', mobile: true, wrap: true, primary: true },
             { key: 'source', label: 'المصدر', render: (v) => CASHBOX_SOURCE_LABELS[v] || v || '—' },
@@ -440,7 +440,7 @@ export const SECTION_CONFIGS = {
             <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-4">
                     <p className="font-display text-xl font-bold tracking-tight text-foreground">{item.type === 'in' ? 'حركة داخلية' : 'حركة خارجية'}</p>
-                    <span className={`font-display text-2xl font-extrabold tabular-nums ${item.type === 'in' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{item.type === 'in' ? '+' : '−'}{moneyText(item.amount)} <span className="text-sm font-semibold">ج.م</span></span>
+                    <span className={`font-display text-2xl font-extrabold tabular-nums ${item.type === 'in' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>{item.type === 'in' ? '+' : '−'}{moneyText(item.amount)} <span className="text-sm font-semibold">ج.م</span></span>
                 </div>
                 <DetailGrid fields={[
                     { label: 'البيان', value: item.category },

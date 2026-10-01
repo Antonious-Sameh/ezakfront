@@ -391,13 +391,12 @@ function cashboxSummary(shopId, index, p) {
 	const today = new Date().toISOString().slice(0, 10);
 	return {
 		success: true,
-		data: {
-			totalIn,
-			totalOut,
-			balance: totalIn - totalOut,
-			todayIn: ds.cashbox.filter((c) => c.type === 'in' && c.date.slice(0, 10) === today).reduce((a, c) => a + c.amount, 0),
-			todayOut: ds.cashbox.filter((c) => c.type === 'out' && c.date.slice(0, 10) === today).reduce((a, c) => a + c.amount, 0),
-		},
+		// Same shape as the real backend (Phase 10).
+		data: (() => {
+			const todayIn = ds.cashbox.filter((c) => c.type === 'in' && c.date.slice(0, 10) === today).reduce((a, c) => a + c.amount, 0);
+			const todayOut = ds.cashbox.filter((c) => c.type === 'out' && c.date.slice(0, 10) === today).reduce((a, c) => a + c.amount, 0);
+			return { balance: totalIn - totalOut, todayIn, todayOut, todayNet: todayIn - todayOut };
+		})(),
 	};
 }
 
@@ -410,24 +409,14 @@ function expensesSummary(shopId, index, p) {
 	const month = new Date().toISOString().slice(0, 7);
 	return {
 		success: true,
+		// Same shape as the real backend (Phase 10).
 		data: {
-			total: list.reduce((a, e) => a + e.amount, 0),
-			thisMonth: ds.expenses.filter((e) => e.date.slice(0, 7) === month).reduce((a, e) => a + e.amount, 0),
-			byCategory,
+			todayTotal: ds.expenses.filter((e) => e.date.slice(0, 10) === new Date().toISOString().slice(0, 10)).reduce((a, e) => a + e.amount, 0),
+			monthTotal: ds.expenses.filter((e) => e.date.slice(0, 7) === month).reduce((a, e) => a + e.amount, 0),
 		},
 	};
 }
 
-function bucketByDay(list, valueKey) {
-	const map = {};
-	list.forEach((row) => {
-		const d = row.date.slice(0, 10);
-		if (!map[d]) map[d] = { date: d, value: 0, count: 0 };
-		map[d].value += row[valueKey];
-		map[d].count += 1;
-	});
-	return Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
-}
 
 function buildReport(shopId, index, type, p) {
 	const ds = buildShop(shopId, index);
@@ -438,53 +427,117 @@ function buildReport(shopId, index, type, p) {
 		purchases = purchases.filter((s) => inDateRange(s.date, p.from, p.to));
 	}
 
+	if (type === 'daily') {
+		// Same shape as the shops' /reports/daily (via System 5): a zero-filled day series.
+		const from = p.from || (sales[sales.length - 1]?.date || new Date().toISOString()).slice(0, 10);
+		const to = p.to || new Date().toISOString().slice(0, 10);
+		const days = [];
+		for (let d = new Date(`${from}T00:00:00Z`); d <= new Date(`${to}T00:00:00Z`) && days.length < 370; d = new Date(d.getTime() + 86400000)) {
+			days.push(d.toISOString().slice(0, 10));
+		}
+		const exp = ds.expenses.filter((e) => inDateRange(e.date, from, to));
+		return {
+			success: true,
+			data: {
+				available: true,
+				days: days.map((date) => {
+					const daySales = sales.filter((s) => s.date.slice(0, 10) === date);
+					const netSales = daySales.reduce((a, s) => a + s.total, 0);
+					const cogs = daySales.reduce((a, s) => a + s.items.reduce((x, it) => x + (it.cost ?? it.price * 0.7) * it.qty, 0), 0);
+					const expenses = exp.filter((e) => e.date.slice(0, 10) === date).reduce((a, e) => a + e.amount, 0);
+					const purchasesTotal = purchases.filter((x) => x.date.slice(0, 10) === date).reduce((a, x) => a + x.total, 0);
+					return {
+						date, sales: netSales, returns: 0, netSales, invoices: daySales.length, cogs,
+						grossProfit: netSales - cogs, expenses, net: netSales - cogs - expenses, purchases: purchasesTotal,
+					};
+				}),
+			},
+		};
+	}
+	// Same shapes as the real System 5 backend (Phase 10) — see
+	// back/src/services/shopReports.service.js.
+	const r2 = (v) => Math.round(v * 100) / 100;
 	if (type === 'sales') {
-		const totalSales = sales.reduce((a, s) => a + s.total, 0);
-		const totalProfit = sales.reduce((a, s) => a + s.items.reduce((x, it) => x + (it.price - it.price * 0.7) * it.qty, 0), 0);
-		const byDay = bucketByDay(sales, 'total');
-		const byPaymentType = {};
-		sales.forEach((s) => { byPaymentType[s.paymentType] = (byPaymentType[s.paymentType] || 0) + s.total; });
+		const grossSales = sales.reduce((a, s) => a + s.total, 0);
 		const productMap = {};
-		sales.forEach((s) => s.items.forEach((it) => { productMap[it.productName] = (productMap[it.productName] || 0) + it.qty; }));
-		const topProducts = Object.entries(productMap).map(([name, qty]) => ({ name, qty })).sort((a, b) => b.qty - a.qty).slice(0, 6);
-		return { success: true, data: { totalSales, totalProfit, count: sales.length, byDay, byPaymentType, topProducts } };
+		sales.forEach((s) => s.items.forEach((it) => {
+			const e = productMap[it.productName] || { name: it.productName, qty: 0, total: 0 };
+			e.qty += it.qty;
+			e.total += it.total;
+			productMap[it.productName] = e;
+		}));
+		const by = (pt) => sales.filter((s) => s.paymentType === pt).reduce((a, s) => a + s.total, 0);
+		return {
+			success: true,
+			data: {
+				totalSales: grossSales, grossSales, returns: 0, count: sales.length,
+				avgInvoice: sales.length ? r2(grossSales / sales.length) : 0,
+				collected: sales.reduce((a, s) => a + (s.paid ?? s.total), 0),
+				creditOutstanding: sales.reduce((a, s) => a + (s.remaining ?? 0), 0),
+				byDay: [],
+				topProducts: Object.values(productMap).sort((a, b) => b.total - a.total).slice(0, 10),
+				byPaymentType: { cash: by('cash'), credit: by('credit') },
+			},
+		};
 	}
 	if (type === 'purchases') {
-		const totalPurchases = purchases.reduce((a, s) => a + s.total, 0);
-		const byDay = bucketByDay(purchases, 'total');
-		const supMap = {};
-		purchases.forEach((s) => { supMap[s.supplierName] = (supMap[s.supplierName] || 0) + s.total; });
-		const topSuppliers = Object.entries(supMap).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total).slice(0, 6);
-		return { success: true, data: { totalPurchases, count: purchases.length, byDay, topSuppliers } };
+		const total = purchases.reduce((a, s) => a + s.total, 0);
+		const paid = purchases.reduce((a, s) => a + (s.paid ?? s.total), 0);
+		return { success: true, data: { totalPurchases: total, count: purchases.length, paid, creditOutstanding: r2(total - paid) } };
 	}
 	if (type === 'profit') {
-		const totalSales = sales.reduce((a, s) => a + s.total, 0);
-		const totalCost = sales.reduce((a, s) => a + s.items.reduce((x, it) => x + it.price * 0.7 * it.qty, 0), 0);
-		const totalProfit = totalSales - totalCost;
-		const merged = {};
-		sales.forEach((s) => {
-			const d = s.date.slice(0, 10);
-			if (!merged[d]) merged[d] = { date: d, sales: 0, cost: 0 };
-			merged[d].sales += s.total;
-			merged[d].cost += s.items.reduce((x, it) => x + it.price * 0.7 * it.qty, 0);
-		});
-		const byDay = Object.values(merged).map((d) => ({ ...d, profit: d.sales - d.cost })).sort((a, b) => a.date.localeCompare(b.date));
-		return { success: true, data: { totalSales, totalCost, totalProfit, margin: totalSales ? Math.round((totalProfit / totalSales) * 100) : 0, byDay } };
+		const grossSales = sales.reduce((a, s) => a + s.total, 0);
+		const cogs = sales.reduce((a, s) => a + s.items.reduce((x, it) => x + (it.cost ?? it.price * 0.7) * it.qty, 0), 0);
+		const expenses = ds.expenses.filter((e) => inDateRange(e.date, p.from, p.to)).reduce((a, e) => a + e.amount, 0);
+		const discount = sales.reduce((a, s) => a + (s.discount || 0), 0);
+		const grossProfit = r2(grossSales - cogs);
+		const totalProfit = r2(grossProfit - expenses);
+		return {
+			success: true,
+			data: {
+				totalProfit, margin: grossSales ? Math.round((totalProfit / grossSales) * 1000) / 10 : 0,
+				grossSales, discount, returns: 0, revenue: grossSales, cogs: r2(cogs), grossProfit, expenses, byDay: [],
+			},
+		};
 	}
 	if (type === 'inventory') {
-		const totalStockValue = ds.products.reduce((a, p) => a + p.cost * p.stock, 0);
-		const byCategory = {};
-		ds.products.forEach((p) => { byCategory[p.category] = (byCategory[p.category] || 0) + 1; });
-		const topValueProducts = [...ds.products].sort((a, b) => b.cost * b.stock - a.cost * a.stock).slice(0, 6).map((p) => ({ name: p.name, value: p.cost * p.stock, stock: p.stock }));
-		return { success: true, data: { totalProducts: ds.products.length, totalStockValue, lowStockCount: ds.products.filter((p) => p.status !== 'ok').length, byCategory, topValueProducts } };
+		const costValue = ds.products.reduce((a, x) => a + x.cost * x.stock, 0);
+		const saleValue = ds.products.reduce((a, x) => a + x.price * x.stock, 0);
+		return {
+			success: true,
+			data: {
+				totalStockValue: costValue, saleValue, expectedProfit: r2(saleValue - costValue),
+				totalProducts: ds.products.length, totalQuantity: ds.products.reduce((a, x) => a + x.stock, 0),
+				lowCount: ds.products.filter((x) => x.status === 'low').length,
+				outCount: ds.products.filter((x) => x.status === 'out').length,
+			},
+		};
 	}
 	if (type === 'customers') {
-		const top = [...ds.customers].sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 8);
-		return { success: true, data: { totalCustomers: ds.customers.length, topCustomers: top } };
+		const top = [...ds.customers].sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 8)
+			.map((c) => ({ id: c.id, name: c.name, totalSpent: c.totalSpent, remaining: c.balance || 0 }));
+		return {
+			success: true,
+			data: {
+				count: ds.customers.length,
+				totalOutstanding: ds.customers.reduce((a, c) => a + (c.balance || 0), 0),
+				withBalanceCount: ds.customers.filter((c) => c.balance > 0).length,
+				topCustomers: top,
+			},
+		};
 	}
 	if (type === 'suppliers') {
-		const top = [...ds.suppliers].sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 8);
-		return { success: true, data: { totalSuppliers: ds.suppliers.length, topSuppliers: top } };
+		const top = [...ds.suppliers].sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 8)
+			.map((s) => ({ id: s.id, name: s.name, totalAmount: s.totalAmount, remaining: s.balance || 0 }));
+		return {
+			success: true,
+			data: {
+				count: ds.suppliers.length,
+				totalOutstanding: ds.suppliers.reduce((a, s) => a + (s.balance || 0), 0),
+				withBalanceCount: ds.suppliers.filter((s) => s.balance > 0).length,
+				topSuppliers: top,
+			},
+		};
 	}
 	return { success: true, data: {} };
 }
@@ -498,22 +551,71 @@ function shopIndex(shopId) {
 
 export const mock = {
 	getShops: () => ({ success: true, data: getShops() }),
+	// Same shape as the real backend (Phase 12): totals, previous period,
+	// % change, per-shop share / rank / margin / debts, combined day series.
 	getCompareReport: (from, to) => {
 		const shops = getShops();
-		const byShop = shops.map((s) => {
+		const DAY = 86400000;
+		const f = from || new Date(Date.now() - 29 * DAY).toISOString().slice(0, 10);
+		const t = to || new Date().toISOString().slice(0, 10);
+		const len = Math.round((new Date(t) - new Date(f)) / DAY) + 1;
+		const prevTo = new Date(new Date(f).getTime() - DAY).toISOString().slice(0, 10);
+		const prevFrom = new Date(new Date(prevTo).getTime() - (len - 1) * DAY).toISOString().slice(0, 10);
+		const pct = (c, p) => (!p ? (c ? null : 0) : Math.round(((c - p) / Math.abs(p)) * 1000) / 10);
+		const figures = (list) => {
+			const sales = list.reduce((a, x) => a + x.total, 0);
+			const profit = list.reduce((a, x) => a + (x.profit ?? 0), 0);
+			return { sales, profit, invoices: list.length };
+		};
+		const dayMap = {};
+		const rows = shops.map((s) => {
 			const ds = buildShop(s.id, shopIndex(s.id));
-			let sales = ds.sales;
-			if (from || to) sales = sales.filter((row) => inDateRange(row.date, from, to));
-			const totalSales = sales.reduce((a, x) => a + x.total, 0);
-			const totalProfit = sales.reduce((a, x) => a + x.items.reduce((y, it) => y + (it.price - it.price * 0.7) * it.qty, 0), 0);
-			return { shopId: s.id, shopName: s.name, sales: totalSales, profit: totalProfit };
+			const cur = figures(ds.sales.filter((row) => inDateRange(row.date, f, t)));
+			const prev = figures(ds.sales.filter((row) => inDateRange(row.date, prevFrom, prevTo)));
+			ds.sales.filter((row) => inDateRange(row.date, f, t)).forEach((row) => {
+				const d = row.date.slice(0, 10);
+				dayMap[d] = dayMap[d] || { date: d, sales: 0, profit: 0 };
+				dayMap[d].sales += row.total;
+				dayMap[d].profit += row.profit ?? 0;
+			});
+			const outstanding = ds.customers.reduce((a, c) => a + (c.balance || 0), 0);
+			return {
+				shopId: s.id, shopName: s.name, ...cur,
+				margin: cur.sales ? Math.round((cur.profit / cur.sales) * 1000) / 10 : 0,
+				available: s.status !== 'offline',
+				previous: { sales: prev.sales, profit: prev.profit },
+				change: { sales: pct(cur.sales, prev.sales), profit: pct(cur.profit, prev.profit) },
+				outstanding,
+			};
 		});
+		const totalSales = rows.reduce((a, x) => a + x.sales, 0);
+		const totalProfit = rows.reduce((a, x) => a + x.profit, 0);
+		const prevSales = rows.reduce((a, x) => a + x.previous.sales, 0);
+		const prevProfit = rows.reduce((a, x) => a + x.previous.profit, 0);
+		const ranked = rows.filter((r) => r.available).sort((a, b) => b.sales - a.sales).map((r) => r.shopId);
+		const days = [];
+		for (let d = new Date(f); d <= new Date(t); d = new Date(d.getTime() + DAY)) {
+			const key = d.toISOString().slice(0, 10);
+			days.push(dayMap[key] || { date: key, sales: 0, profit: 0 });
+		}
 		return {
 			success: true,
 			data: {
-				totalSales: byShop.reduce((a, x) => a + x.sales, 0),
-				totalProfit: byShop.reduce((a, x) => a + x.profit, 0),
-				byShop,
+				range: { from: f, to: t },
+				previousRange: { from: prevFrom, to: prevTo },
+				totalSales, totalProfit,
+				totalInvoices: rows.reduce((a, x) => a + x.invoices, 0),
+				margin: totalSales ? Math.round((totalProfit / totalSales) * 1000) / 10 : 0,
+				totalOutstanding: rows.reduce((a, x) => a + x.outstanding, 0),
+				previous: { sales: prevSales, profit: prevProfit },
+				change: { sales: pct(totalSales, prevSales), profit: pct(totalProfit, prevProfit) },
+				shopsAvailable: ranked.length,
+				byShop: rows.map((r) => ({
+					...r,
+					share: totalSales ? Math.round((r.sales / totalSales) * 1000) / 10 : 0,
+					rank: ranked.includes(r.shopId) ? ranked.indexOf(r.shopId) + 1 : null,
+				})),
+				daily: { available: true, partial: false, shopsIncluded: shops.length, days },
 			},
 		};
 	},
@@ -533,7 +635,25 @@ export const mock = {
 	getCashboxSummary: (shopId, params) => cashboxSummary(shopId, shopIndex(shopId), parseParams(params)),
 	getExpensesSummary: (shopId, params) => expensesSummary(shopId, shopIndex(shopId), parseParams(params)),
 
-	getShopReport: (shopId, type, params) => buildReport(shopId, shopIndex(shopId), type, parseParams(params)),
+	getShopReport: (shopId, type, params) => {
+		const p = parseParams(params);
+		const res = buildReport(shopId, shopIndex(shopId), type, p);
+		// ?compare=previous, like the real backend: previous figures + % change.
+		if (p.extras.compare === 'previous' && ['sales', 'profit', 'purchases'].includes(type) && p.from && p.to) {
+			const DAY = 86400000;
+			const len = Math.round((new Date(p.to) - new Date(p.from)) / DAY) + 1;
+			const prevTo = new Date(new Date(p.from).getTime() - DAY).toISOString().slice(0, 10);
+			const prevFrom = new Date(new Date(prevTo).getTime() - (len - 1) * DAY).toISOString().slice(0, 10);
+			const prevData = buildReport(shopId, shopIndex(shopId), type, { ...p, from: prevFrom, to: prevTo }).data;
+			const previous = Object.fromEntries(Object.entries(prevData).filter(([, v]) => typeof v === 'number'));
+			const change = Object.fromEntries(Object.entries(previous).map(([k, v]) => {
+				const c = res.data[k] ?? 0;
+				return [k, !v ? (c ? null : 0) : Math.round(((c - v) / Math.abs(v)) * 1000) / 10];
+			}));
+			return { success: true, data: { ...res.data, previous, change, previousRange: { from: prevFrom, to: prevTo } } };
+		}
+		return res;
+	},
 
 	exportShopList: (shopId, entity, params) => {
 		const res = mock.getShopList(shopId, entity, { ...params, page: 1, limit: 100000 });

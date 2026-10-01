@@ -23,3 +23,15 @@ if (!window.matchMedia) {
   });
 }
 window.scrollTo = () => {};
+
+// jsdom has no PointerEvent: without this, fireEvent.pointerMove drops clientX.
+if (!window.PointerEvent) {
+  class PointerEvent extends MouseEvent {
+    constructor(type, params = {}) {
+      super(type, params);
+      this.pointerId = params.pointerId ?? 1;
+      this.pointerType = params.pointerType ?? 'mouse';
+    }
+  }
+  window.PointerEvent = PointerEvent;
+}

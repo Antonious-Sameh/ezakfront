@@ -1,64 +1,43 @@
 import React, { useCallback } from 'react';
 import { Helmet } from '@/components/Head';
 import { Link, useParams } from 'react-router-dom';
-import { 
-    AlertTriangle, 
-    Boxes, 
-    CalendarDays, 
-    Coins, 
-    Package, 
-    Receipt, 
-    TrendingUp, 
-    Users,
-    ArrowUpLeft
-} from 'lucide-react';
+import { ArrowUpLeft, BarChart3, Boxes, Package, PackageX, Users } from 'lucide-react';
 import { api } from '@/lib/api';
-import { formatNumber } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { ErrorState } from '@/components/StateViews';
-import { AR_LOCALE } from '@/lib/constants';
+import KpiCard from '@/components/analytics/KpiCard';
+import { money, count } from '@/components/analytics/format';
 
-const num = (v) => formatNumber(v ?? 0, { locale: AR_LOCALE });
-/** Money KPI: amount + small "ج.م", same treatment as everywhere else. */
-const moneyValue = (v) => (
-    <>
-        {formatNumber(v ?? 0, { locale: AR_LOCALE, maximumFractionDigits: 2 })}
-        <span className="ms-1 text-sm font-medium text-muted-foreground">ج.م</span>
-    </>
-);
+/**
+ * A shop's "right now": today's money first (sales, profit, cash in the
+ * drawer, month so far) with the same colour language as the home page
+ * (sales = violet, profit = green, loss / negative = red, needs attention =
+ * amber), then the shop's size, then what is running out.
+ */
 
-function StatCard({ icon: Icon, label, value, hint, tone, className = "" }) {
-    return (
-        <div className={`flex flex-col justify-between gap-3 rounded-xl border border-border bg-card p-4 sm:p-5 shadow-sm transition-all hover:border-border/80 hover:shadow-md ${className}`}>
-            <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">{label}</span>
-                <span className={`grid h-9 w-9 place-items-center rounded-lg bg-muted/60 ${tone || 'text-muted-foreground'}`}>
-                    <Icon className="h-5 w-5" strokeWidth={1.75} />
-                </span>
-            </div>
-            <div>
-                <p className="font-display text-2xl font-bold tabular-nums tracking-tight text-foreground sm:text-3xl">
-                    {value}
-                </p>
-                {hint ? (
-                    <p className="mt-1 text-[11px] font-medium text-muted-foreground/80">{hint}</p>
-                ) : null}
-            </div>
-        </div>
+function CountTile({ icon: Icon, label, value, to, warn = false }) {
+    const body = (
+        <>
+            <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${warn ? 'bg-amber-500/10 text-amber-600' : 'bg-muted text-muted-foreground'}`}>
+                <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+                <span className="block text-xs text-muted-foreground">{label}</span>
+                <span className={`block font-display text-xl font-bold tabular-nums ${warn ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'}`}>{value}</span>
+            </span>
+        </>
+    );
+    const cls = `flex items-center gap-3 rounded-2xl border px-4 py-3.5 ${warn ? 'border-amber-500/30 bg-amber-500/[0.05]' : 'border-border bg-card'}`;
+    return to ? (
+        <Link to={to} className={`${cls} transition-colors hover:bg-muted/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent`}>{body}</Link>
+    ) : (
+        <div className={cls}>{body}</div>
     );
 }
 
 function StatCardSkeleton() {
-    return (
-        <div className="h-32 animate-pulse rounded-xl border border-border/50 bg-card p-5">
-            <div className="flex justify-between items-center mb-4">
-                <div className="h-3 w-20 rounded bg-muted" />
-                <div className="h-9 w-9 rounded-lg bg-muted" />
-            </div>
-            <div className="h-8 w-28 rounded bg-muted" />
-        </div>
-    );
+    return <div className="h-32 animate-pulse rounded-2xl border border-border bg-card" aria-hidden="true" />;
 }
 
 export default function ShopOverviewPage() {
@@ -83,12 +62,12 @@ export default function ShopOverviewPage() {
                 <h1 className="font-display text-xl font-bold tracking-tight text-foreground sm:text-2xl">
                     نظرة عامة
                 </h1>
-                <p className="text-xs text-muted-foreground">ملخص سريع وأداء المبيعات والمخزون الخاص بالمحل</p>
+                <p className="text-xs text-muted-foreground">المحل النهارده: المبيعات والربح والكاشير، واللي ناقص من المخزون</p>
             </header>
 
             {loading ? (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {Array.from({ length: 7 }).map((_, i) => (
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
                         <StatCardSkeleton key={i} />
                     ))}
                 </div>
@@ -100,51 +79,51 @@ export default function ShopOverviewPage() {
                 />
             ) : data ? (
                 <>
-                    {/* شبكة الإحصائيات الرئيسية */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <StatCard 
-                            icon={Receipt} 
-                            label="مبيعات اليوم" 
-                            value={moneyValue(data.todaySales)} 
-                            hint={`${num(data.todayOrders)} فاتورة اليوم`} 
+                    {/* Today's money */}
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                        <KpiCard kind="sales" label="مبيعات النهارده" value={money(data.todaySales)} unit="ج.م" sub={`${count(data.todayOrders)} فاتورة`} />
+                        <KpiCard
+                            kind={data.todayProfit < 0 ? 'loss' : 'profit'}
+                            label="ربح النهارده"
+                            value={money(data.todayProfit)}
+                            unit="ج.م"
+                            valueClass={data.todayProfit < 0 ? 'text-rose-600' : 'text-emerald-700 dark:text-emerald-400'}
+                            sub="بعد التكلفة والمصروفات"
                         />
-                        <StatCard 
-                            icon={CalendarDays} 
-                            label="مبيعات الشهر" 
-                            value={moneyValue(data.monthSales)} 
+                        <KpiCard
+                            kind={data.cashboxBalance < 0 ? 'loss' : 'neutral'}
+                            label="رصيد الكاشير"
+                            value={money(data.cashboxBalance)}
+                            unit="ج.م"
+                            valueClass={data.cashboxBalance < 0 ? 'text-rose-600' : ''}
+                            sub="الفلوس اللي في الدرج دلوقتي"
                         />
-                        <StatCard 
-                            icon={TrendingUp} 
-                            label="ربح اليوم" 
-                            value={moneyValue(data.todayProfit)} 
-                            tone="text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" 
-                        />
-                        <StatCard 
-                            icon={Coins} 
-                            label="رصيد الكاشير" 
-                            value={moneyValue(data.cashboxBalance)} 
-                            tone={data.cashboxBalance < 0 
-                                ? 'text-destructive bg-destructive/10' 
-                                : 'text-amber-600 dark:text-amber-400 bg-amber-500/10'
-                            } 
-                        />
-                        <StatCard 
-                            icon={Boxes} 
-                            label="عدد المنتجات" 
-                            value={num(data.productCount)} 
-                        />
-                        <StatCard 
-                            icon={AlertTriangle} 
-                            label="منتجات ناقصة" 
-                            value={num(data.lowStockCount)} 
-                            tone="text-amber-600 dark:text-amber-400 bg-amber-500/10" 
-                        />
-                        <StatCard 
-                            icon={Users} 
-                            label="عدد العملاء" 
-                            value={num(data.customerCount)} 
-                        />
+                        <KpiCard kind="sales" label="مبيعات الشهر لحد النهارده" value={money(data.monthSales)} unit="ج.م" />
                     </div>
+
+                    {/* The shop's size + what to act on */}
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <CountTile icon={Boxes} label="الأصناف" value={count(data.productCount)} to={`/shops/${shopId}/products`} />
+                        <CountTile
+                            icon={PackageX}
+                            label="ناقص أو خلص"
+                            value={count(data.lowStockCount)}
+                            to={`/shops/${shopId}/products`}
+                            warn={data.lowStockCount > 0}
+                        />
+                        <CountTile icon={Users} label="العملاء" value={count(data.customerCount)} to={`/shops/${shopId}/customers`} />
+                    </div>
+
+                    <Link
+                        to={`/shops/${shopId}/reports`}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.06] px-4 py-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent/[0.1]"
+                    >
+                        <span className="flex items-center gap-2.5">
+                            <BarChart3 className="h-5 w-5 text-accent" aria-hidden="true" />
+                            التقارير: المقارنة بالفترة اللي فاتت، وحساب الأرباح، والأكتر مبيعاً
+                        </span>
+                        <ArrowUpLeft className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    </Link>
 
                     {/* قسم تنبيهات النقص في المخزون */}
                     {data.lowStockItems?.length ? (
@@ -152,14 +131,14 @@ export default function ShopOverviewPage() {
                             <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
                                 <div className="flex items-center gap-2">
                                     <div className="grid h-8 w-8 place-items-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                        <Package className="h-4.5 w-4.5" strokeWidth={1.75} />
+                                        <Package className="h-4 w-4" strokeWidth={1.75} />
                                     </div>
                                     <div>
                                         <h2 className="font-display text-base font-bold text-foreground">
-                                            تنبيهات المخزون
+                                            أصناف محتاجة تتطلب
                                         </h2>
                                         <p className="text-[11px] text-muted-foreground">
-                                            المنتجات التي وصلت للحد الأدنى أو نفدت بالكامل
+                                            وصلت لحد التنبيه أو خلصت
                                         </p>
                                     </div>
                                 </div>
@@ -184,9 +163,9 @@ export default function ShopOverviewPage() {
                                                 <p className="truncate text-sm font-bold text-foreground">
                                                     {p.name}
                                                 </p>
-                                                <p className="text-[11px] text-muted-foreground truncate">
-                                                    {[p.category, p.sku].filter(Boolean).join(' • ')}
-                                                </p>
+                                                {p.sku ? (
+                                                    <p className="truncate font-mono text-[11px] text-muted-foreground" dir="ltr">{p.sku}</p>
+                                                ) : null}
                                             </div>
                                             <span 
                                                 className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold tabular-nums ${
@@ -195,7 +174,7 @@ export default function ShopOverviewPage() {
                                                         : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
                                                 }`}
                                             >
-                                                {isOut ? 'نفد بالكامل' : `${num(p.stock)} ${p.unit || ''}`.trim()}
+                                                {isOut ? 'خلص' : `فاضل ${count(p.stock)}${p.unit ? ` ${p.unit}` : ''}`}
                                             </span>
                                         </li>
                                     );

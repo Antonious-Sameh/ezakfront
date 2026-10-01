@@ -98,9 +98,8 @@ export default defineConfig({
         // deploys, so an update only re-downloads the app's own code.
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
-          if (/[\\/]node_modules[\\/](recharts|d3-[^\\/]+|victory-vendor|internmap|decimal\.js-light|recharts-scale|react-smooth|eventemitter3|lodash|fast-equals)[\\/]/.test(id)) {
-            return 'charts';
-          }
+          // (No chart library any more: the home page and reports draw their
+          // charts with plain SVG / HTML — recharts is not in the build.)
           // The .xlsx zip writer is only needed when the owner clicks
           // "تصدير": leave it with the lazily-loaded exporters chunk.
           if (/[\\/]node_modules[\\/]fflate[\\/]/.test(id)) return undefined;

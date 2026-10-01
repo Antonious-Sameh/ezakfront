@@ -1,48 +1,46 @@
-import React, { Suspense, lazy, useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Helmet } from '@/components/Head';
-import { subDays, toISODate } from '@/lib/dates';
 import { Store } from 'lucide-react';
 import { api } from '@/lib/api';
-import { formatNumber } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
-import ShopCard, { ShopCardSkeleton } from '@/components/ShopCard';
-// The chart library (recharts) is the single biggest dependency; loading it
-// separately lets the shop cards appear first on a slow connection.
-const SalesCompareChart = lazy(() => import('@/components/SalesCompareChart'));
 import { EmptyState, ErrorState } from '@/components/StateViews';
+import ChangeBadge from '@/components/analytics/ChangeBadge';
+import TrendChart from '@/components/analytics/TrendChart';
+import AttentionStrip from '@/components/analytics/AttentionStrip';
+import ShopRanking from '@/components/analytics/ShopRanking';
+import { buildAttention } from '@/components/analytics/attention';
+import { money, pct, count } from '@/components/analytics/format';
+import { PERIODS, periodById, periodRange } from '@/components/analytics/periods';
 
-const AR_LOCALE = 'ar-EG';
+/**
+ * Home: the owner's answer to "how are my four shops doing?" in one screen.
+ *   1. The hero: total sales for the period, vs the previous period, with
+ *      profit / margin / invoices / debts, and the day-by-day pulse of all
+ *      four shops together.
+ *   2. What needs attention (only when something does).
+ *   3. The shops ranked by sales, with share, profit, margin and change.
+ * No chart library on this page — the trend is plain SVG.
+ */
 
-const PERIODS = [
-    { id: 'today', label: 'اليوم' },
-    { id: 'week', label: 'الأسبوع' },
-    { id: 'month', label: 'الشهر' },
-];
+export { PERIODS };
 
-function PeriodFilter({ value, onChange, disabled }) {
+function PeriodTabs({ value, onChange }) {
     return (
-        <div 
-            className="flex w-full items-center justify-between rounded-xl border border-border bg-muted/50 p-1 sm:w-auto overflow-x-auto" 
-            role="group" 
-            aria-label="اختيار الفترة"
-        >
-            {PERIODS.map((period) => {
-                const isActive = value === period.id;
+        <div className="flex rounded-xl bg-white/10 p-1" role="group" aria-label="اختيار الفترة">
+            {PERIODS.map((p) => {
+                const active = value === p.id;
                 return (
                     <button
-                        key={period.id}
+                        key={p.id}
                         type="button"
-                        disabled={disabled}
-                        onClick={() => onChange(period.id)}
-                        aria-pressed={isActive}
-                        className={`min-h-[38px] flex-1 min-w-[70px] rounded-lg px-3 py-1.5 text-xs font-semibold sm:text-sm transition-all active:scale-[0.98] sm:flex-none ${
-                            isActive
-                                ? 'bg-background text-primary shadow-sm font-bold border border-border/60'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        onClick={() => onChange(p.id)}
+                        aria-pressed={active}
+                        className={`min-h-9 flex-1 whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition-colors sm:flex-none sm:text-sm ${
+                            active ? 'bg-white text-slate-900 shadow-sm' : 'text-white/75 hover:bg-white/10 hover:text-white'
+                        }`}
                     >
-                        {period.label}
+                        {p.label}
                     </button>
                 );
             })}
@@ -50,187 +48,159 @@ function PeriodFilter({ value, onChange, disabled }) {
     );
 }
 
+function HeroStat({ label, value, unit, tone = 'text-white', badge }) {
+    return (
+        <div className="min-w-0">
+            <p className="text-xs font-medium text-white/60">{label}</p>
+            <p className={`mt-1 flex flex-wrap items-baseline gap-x-1.5 font-display text-xl font-bold tabular-nums sm:text-2xl ${tone}`}>
+                {value}
+                {unit ? <span className="text-xs font-medium text-white/50">{unit}</span> : null}
+            </p>
+            {badge ? <div className="mt-1">{badge}</div> : null}
+        </div>
+    );
+}
+
+function HeroSkeleton() {
+    return (
+        <div className="space-y-5" aria-hidden="true">
+            <div className="h-4 w-40 animate-pulse rounded bg-white/15" />
+            <div className="h-12 w-64 animate-pulse rounded bg-white/15" />
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {[1, 2, 3, 4].map((i) => <div key={i} className="h-12 animate-pulse rounded bg-white/10" />)}
+            </div>
+            <div className="h-40 animate-pulse rounded-xl bg-white/5" />
+        </div>
+    );
+}
+
+export function mergeShopRows(compare, shops) {
+    const info = new Map((shops || []).map((s) => [s.id, s]));
+    return [...(compare?.byShop || [])]
+        .map((r) => ({ ...r, status: info.get(r.shopId)?.status, lowStockCount: info.get(r.shopId)?.lowStockCount ?? 0 }))
+        .sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99));
+}
+
+/** One plain sentence about the period — the first thing worth knowing. */
+export function headline(compare, period) {
+    if (!compare) return '';
+    const leader = (compare.byShop || []).find((s) => s.rank === 1);
+    const parts = [];
+    if (leader && compare.shopsAvailable > 1) parts.push(`${leader.shopName} في المقدمة بـ ${pct(leader.share)} من المبيعات`);
+    if (typeof compare.change?.sales === 'number' && compare.change.sales !== 0) {
+        parts.push(`المبيعات ${compare.change.sales > 0 ? 'زادت' : 'قلت'} ${pct(Math.abs(compare.change.sales))} عن ${period.previous}`);
+    }
+    return parts.join('، و');
+}
+
 export default function OverviewPage() {
     const { token } = useAuth();
-    const [period, setPeriod] = useState('today');
+    const [periodId, setPeriodId] = useState('month');
+    const period = periodById(periodId);
+    const range = useMemo(() => periodRange(periodId), [periodId]);
 
-    // حساب نطاق التواريخ بشكل مميز يتغير حسب الفلتر
-    const range = useMemo(() => {
-        const to = new Date();
-        const from = period === 'today' ? to : subDays(to, period === 'week' ? 6 : 29);
-        return { 
-            from: toISODate(from), 
-            to: toISODate(to) 
-        };
-    }, [period]);
-
-    const periodLabel = useMemo(() => {
-        return PERIODS.find((p) => p.id === period)?.label || '';
-    }, [period]);
-
-    // Fetchers مع تحسين الأداء عبر useCallback
-    const shopsFetcher = useCallback(
-        (signal) => api.getShops(token, { signal }).then((res) => res.data),
-        [token]
-    );
-    
+    const shopsFetcher = useCallback((signal) => api.getShops(token, { signal }).then((res) => res.data), [token]);
     const compareFetcher = useCallback(
         (signal) => api.getCompareReport(token, range.from, range.to, { signal }).then((res) => res.data),
         [token, range.from, range.to],
     );
-
     const shops = useApiQuery(shopsFetcher, { key: 'shops' });
     const compare = useApiQuery(compareFetcher, { key: `compare:${range.from}:${range.to}`, keepPrevious: true });
 
+    const c = compare.data;
+    const rows = useMemo(() => mergeShopRows(c, shops.data), [c, shops.data]);
+    const attention = useMemo(() => buildAttention({ shops: shops.data || [], compare: c }), [shops.data, c]);
+    const trendDays = c?.daily?.available ? c.daily.days : [];
+
     return (
-        <div className="flex flex-col gap-6 sm:gap-8 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 dir-rtl">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 lg:px-8 dir-rtl">
             <Helmet>
                 <title>الرئيسية — لوحة تحكم المحلات</title>
-                <meta name="description" content="نظرة عامة على مبيعات وأرباح محلاتك الأربعة: مبيعات اليوم، حالة كل محل، وتنبيهات المخزون الناقص." />
+                <meta name="description" content="مبيعات وأرباح المحلات الأربعة، مقارنة بالفترة اللي قبلها، وترتيب المحلات، واللي محتاج انتباهك." />
             </Helmet>
 
-            {/* Hero Section: إجمالي المبيعات والأرباح */}
-            <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary via-primary to-primary/90 px-6 py-8 text-primary-foreground shadow-xl sm:px-8 sm:py-10">
-                <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -top-8 -start-4 select-none font-display text-[20vw] font-bold leading-none text-primary-foreground/[0.05] sm:text-[8rem] md:text-[10rem]"
-                >
-                    المحلات
-                </span>
-
-                <div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                            <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400/50" />
-                            <p className="text-xs font-medium text-primary-foreground/80">
-                                نظرة عامة — {periodLabel}
-                            </p>
-                        </div>
-
-                        {compare.loading ? (
-                            <div className="mt-4 space-y-2">
-                                <div className="h-4 w-36 animate-pulse rounded bg-primary-foreground/20" />
-                                <div className="h-10 w-52 animate-pulse rounded bg-primary-foreground/20" />
-                            </div>
-                        ) : compare.error ? (
-                            <p className="mt-3 text-sm text-primary-foreground/80 bg-red-500/10 p-2 rounded border border-red-500/20 max-w-fit">
-                                تعذر تحميل إجمالي المبيعات — يُرجى إعادة المحاولة.
-                            </p>
-                        ) : (
-                            <>
-                                <p className="mt-2 text-xs sm:text-sm text-primary-foreground/70">
-                                    إجمالي مبيعات المحلات
-                                </p>
-                                <p className="mt-1 font-display text-3xl font-extrabold tracking-tight tabular-nums text-accent sm:text-4xl md:text-5xl">
-                                    {formatNumber(compare.data?.totalSales ?? 0, { locale: AR_LOCALE, maximumFractionDigits: 2 })}
-                                    <span className="ms-2 text-base font-semibold text-primary-foreground/70 sm:text-lg">ج.م</span>
-                                </p>
-                            </>
-                        )}
-                    </div>
-
-                    {!compare.loading && !compare.error && (
-                        <div className="border-t border-primary-foreground/15 pt-4 sm:border-t-0 sm:border-s sm:ps-8 sm:pt-0">
-                            <p className="text-xs font-medium text-primary-foreground/70">صافي الربح</p>
-                            <p className="mt-1 font-display text-2xl font-bold tabular-nums text-primary-foreground sm:text-3xl">
-                                {formatNumber(compare.data?.totalProfit ?? 0, { locale: AR_LOCALE, maximumFractionDigits: 2 })}
-                                <span className="ms-1.5 text-sm font-medium text-primary-foreground/70">ج.م</span>
-                            </p>
-                        </div>
-                    )}
-                </div>
-            </section>
-
-            {/* Shop Ledger Section: تصميم محسن لاختيار المحلات */}
-            <section aria-label="قائمة المحلات" className="space-y-4">
-                <div className="flex items-center justify-between gap-3 px-1">
-                    <div>
-                        <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                            <span>المحلات المتاحة</span>
-                        </h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">اختر المحل للتحكم وإدارة التفاصيل</p>
-                    </div>
-
-                    {shops.data ? (
-                        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tabular-nums text-primary border border-primary/15">
-                            {formatNumber(shops.data.length, { locale: AR_LOCALE })} محلات
-                        </span>
-                    ) : null}
-                </div>
-
-                {shops.loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Array.from({ length: 4 }).map((_, i) => (
-                            <ShopCardSkeleton key={i} />
-                        ))}
-                    </div>
-                ) : shops.error ? (
-                    <ErrorState
-                        title="مقدرناش نحمّل المحلات"
-                        message={shops.error.message}
-                        onRetry={shops.refetch}
-                    />
-                ) : !shops.data?.length ? (
-                    <EmptyState
-                        icon={Store}
-                        title="مفيش محلات لسه"
-                        message="لما المحلات تتضاف على النظام هتظهر هنا تلقائيًا."
-                    />
-                ) : (
-                    /* تحسين العرض عبر Grid تفاعلي بدلاً من القائمة التقليدية */
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 transition-all">
-                        {shops.data.map((shop, index) => (
-                            <div 
-                                key={shop.id || index}
-                                className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-0.5 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5"
-                            >
-                                <ShopCard shop={shop} index={index} />
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </section>
-
-            {/* Comparison Chart Section */}
+            {/* 1. Hero */}
             <section
-                aria-label="مقارنة المبيعات والرسوم البيانية"
-                className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-xs space-y-6"
+                aria-labelledby="hero-title"
+                className={`rounded-3xl bg-primary px-5 py-6 text-white shadow-lg transition-opacity sm:px-8 sm:py-8 ${compare.fetching && c ? 'opacity-80' : ''}`}
             >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-4">
-                    <div>
-                        <h2 className="font-display text-lg font-bold text-foreground">مقارنة أداء المحلات</h2>
-                        <p className="text-xs text-muted-foreground">تحليل المبيعات والأرباح لكل محل في الفترة المحددة</p>
-                    </div>
-                    <PeriodFilter value={period} onChange={setPeriod} disabled={compare.loading} />
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <h1 id="hero-title" className="font-display text-lg font-bold sm:text-xl">مبيعات المحلات الأربعة</h1>
+                    <PeriodTabs value={periodId} onChange={setPeriodId} />
                 </div>
 
                 {compare.loading ? (
-                    <div className="flex h-72 items-end justify-around gap-2 sm:gap-4 px-2 sm:px-4 py-6">
-                        {[55, 80, 40, 65].map((h, i) => (
-                            <div
-                                key={i}
-                                className="w-full max-w-16 animate-pulse rounded-t-xl bg-muted/80"
-                                style={{ height: `${h}%` }}
-                            />
-                        ))}
-                    </div>
+                    <div className="mt-6"><HeroSkeleton /></div>
                 ) : compare.error ? (
-                    <ErrorState
-                        title="مقدرناش نحمّل بيانات المقارنة"
-                        message={compare.error.message}
-                        onRetry={compare.refetch}
-                    />
-                ) : !compare.data?.byShop?.length ? (
-                    <EmptyState 
-                        title="مفيش مبيعات في الفترة دي" 
-                        message="جرّب اختيار فترة زمنية تانية من الفلتر أعلاه." 
-                    />
-                ) : (
-                    <div className="w-full overflow-x-auto pt-2">
-                        <Suspense fallback={<div className="h-72 w-full animate-pulse rounded-xl bg-muted/50 sm:h-80" aria-label="جاري تحميل الرسم البياني" />}>
-                            <SalesCompareChart data={compare.data.byShop} />
-                        </Suspense>
+                    <div className="mt-6 rounded-xl bg-white/10 p-4 text-sm">
+                        مقدرناش نجيب أرقام المحلات: {compare.error.message}
+                        <button type="button" onClick={compare.refetch} className="ms-3 font-semibold underline">حاول تاني</button>
                     </div>
+                ) : (
+                    <>
+                        <div className="mt-6 flex flex-wrap items-end gap-x-4 gap-y-2">
+                            <p className="font-display text-4xl font-extrabold leading-none tabular-nums text-white sm:text-5xl" data-testid="hero-total">
+                                {money(c.totalSales)}
+                                <span className="ms-2 text-lg font-semibold text-white/60">ج.م</span>
+                            </p>
+                            <div className="flex items-center gap-2 pb-1">
+                                <ChangeBadge value={c.change?.sales} size="lg" onDark label="المبيعات" />
+                                {c.previous ? (
+                                    <span className="text-xs text-white/60">مقابل {money(c.previous.sales)} {period.previous}</span>
+                                ) : null}
+                            </div>
+                        </div>
+                        {headline(c, period) ? <p className="mt-3 text-sm text-white/80">{headline(c, period)}</p> : null}
+
+                        <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 border-t border-white/10 pt-5 sm:grid-cols-4">
+                            <HeroStat
+                                label="صافي الربح"
+                                value={money(c.totalProfit)}
+                                unit="ج.م"
+                                tone={c.totalProfit < 0 ? 'text-rose-300' : 'text-emerald-300'}
+                                badge={<ChangeBadge value={c.change?.profit} onDark label="الربح" />}
+                            />
+                            <HeroStat label="هامش الربح" value={pct(c.margin)} />
+                            <HeroStat label="عدد الفواتير" value={count(c.totalInvoices)} />
+                            <HeroStat label="على العملاء" value={money(c.totalOutstanding)} unit="ج.م" tone={c.totalOutstanding > 0 ? 'text-amber-200' : 'text-white'} />
+                        </div>
+
+                        {trendDays.length > 1 ? (
+                            <div className="mt-6">
+                                <TrendChart days={trendDays} onDark />
+                                {c.daily.partial ? (
+                                    <p className="mt-2 text-[11px] text-white/50">
+                                        الرسم فيه {count(c.daily.shopsIncluded)} محلات بس — الباقي محتاج تحديث التقرير اليومي.
+                                    </p>
+                                ) : null}
+                            </div>
+                        ) : periodId === 'today' ? (
+                            <p className="mt-6 text-xs text-white/50">اختار "آخر ٧ أيام" أو "آخر ٣٠ يوم" عشان تشوف التطور يوم بيوم.</p>
+                        ) : c?.daily && !c.daily.available ? (
+                            <p className="mt-6 text-xs text-white/50">التطور اليومي هيظهر لما المحلات تتحدث بالتقرير اليومي.</p>
+                        ) : null}
+                    </>
+                )}
+            </section>
+
+            {/* 2. Attention */}
+            {!compare.loading && !compare.error ? <AttentionStrip items={attention} /> : null}
+
+            {/* 3. Shops ranked */}
+            <section aria-labelledby="shops-title" className="flex flex-col gap-3">
+                <div className="flex items-baseline justify-between gap-3">
+                    <h2 id="shops-title" className="font-display text-lg font-bold text-foreground">ترتيب المحلات</h2>
+                    <p className="text-xs text-muted-foreground">حسب المبيعات — {period.label}</p>
+                </div>
+                {compare.loading ? (
+                    <div className="h-72 animate-pulse rounded-2xl border border-border bg-card" aria-hidden="true" />
+                ) : compare.error ? (
+                    // The hero above already explains the failure and offers a retry.
+                    <ErrorState title="مقدرناش نحمّل ترتيب المحلات" onRetry={compare.refetch} />
+                ) : !rows.length ? (
+                    <EmptyState icon={Store} title="مفيش محلات متسجلة" message="راجع إعدادات المحلات في الباك." />
+                ) : (
+                    <ShopRanking rows={rows} />
                 )}
             </section>
         </div>

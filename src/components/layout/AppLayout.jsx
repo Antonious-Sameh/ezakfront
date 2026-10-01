@@ -74,13 +74,14 @@ export default function AppLayout() {
                             </nav>
                         </div>
 
-                        <div className="mt-auto rounded-xl bg-slate-50 border border-slate-100 p-3.5 text-center">
-                            <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-                                <LayoutDashboard className="h-4 w-4" />
-                            </div>
-                            <p className="text-xs font-semibold text-slate-800">نظام موحد</p>
-                            <p className="mt-0.5 text-[11px] text-slate-500 leading-relaxed">
-                                عرض مباشر وشامل لكافة البيانات والعمليات.
+                        {/* A useful fact instead of decoration: this dashboard can't change anything. */}
+                        <div className="mt-auto rounded-xl border border-slate-100 bg-slate-50 p-3.5">
+                            <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
+                                <LayoutDashboard className="h-4 w-4 text-indigo-600" aria-hidden="true" />
+                                للمتابعة بس
+                            </p>
+                            <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
+                                اللوحة دي بتقرا من المحلات ومبتعدّلش حاجة. أي تعديل بيتعمل من سيستم المحل نفسه.
                             </p>
                         </div>
                     </div>
