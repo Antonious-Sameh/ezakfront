@@ -29,13 +29,12 @@ export const LoginPage = lazyWithPreload(() => import('@/pages/LoginPage'));
 export const AppLayout = lazyWithPreload(() => import('@/components/layout/AppLayout'));
 export const OverviewPage = lazyWithPreload(() => import('@/pages/OverviewPage'));
 export const ShopLayout = lazyWithPreload(() => import('@/components/shop/ShopLayout'));
-export const ShopOverviewPage = lazyWithPreload(() => import('@/pages/shop/ShopOverviewPage'));
+export const ShopSummaryPage = lazyWithPreload(() => import('@/pages/shop/ShopSummaryPage'));
 export const ShopSectionPage = lazyWithPreload(() => import('@/pages/shop/ShopSectionPage'));
-export const ShopReportsPage = lazyWithPreload(() => import('@/pages/shop/ShopReportsPage'));
 
 /** Which page chunk a shop sub-path needs — used for prefetch-on-intent. */
 export function preloadShopSection(sectionKey) {
-    if (!sectionKey) return ShopOverviewPage.preload();
-    if (sectionKey === 'reports') return ShopReportsPage.preload();
+    // '' = the summary; 'reports' = the old URL, which now redirects to it.
+    if (!sectionKey || sectionKey === 'reports') return ShopSummaryPage.preload();
     return ShopSectionPage.preload();
 }

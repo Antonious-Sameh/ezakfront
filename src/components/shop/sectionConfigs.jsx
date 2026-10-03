@@ -477,20 +477,40 @@ export const SECTION_CONFIGS = {
     },
 };
 
-/** Ordered list for navigation (sidebar / mobile tabs). */
+/**
+ * Navigation, grouped the way the owner thinks about a shop:
+ *   ملخص (the first thing)                 → everything about "how is it going"
+ *   فلوس       sales, purchases, expenses, cashbox
+ *   المخزون والناس   stock, customers, suppliers
+ *   السجل      activity log
+ * The old separate "التقارير" entry is gone: reports live in the summary page
+ * (old /reports links redirect there).
+ */
 export const SHOP_SECTIONS = [
-    { key: '', label: 'نظرة عامة', icon: ClipboardList },
-    { key: 'sales', label: 'المبيعات', icon: Receipt },
-    { key: 'purchases', label: 'المشتريات', icon: ShoppingCart },
-    { key: 'products', label: 'المخزون', icon: Boxes },
-    { key: 'customers', label: 'العملاء', icon: Users },
-    { key: 'suppliers', label: 'الموردين', icon: Truck },
-    { key: 'expenses', label: 'المصروفات', icon: Wallet },
-    { key: 'cashbox', label: 'الكاشير', icon: ClipboardList },
-    { key: 'activity', label: 'سجل النشاط', icon: ActivityIcon },
-    { key: 'reports', label: 'التقارير', icon: ClipboardList },
+    { key: '', label: 'ملخص', icon: ClipboardList, group: null },
+    { key: 'sales', label: 'المبيعات', icon: Receipt, group: 'فلوس' },
+    { key: 'purchases', label: 'المشتريات', icon: ShoppingCart, group: 'فلوس' },
+    { key: 'expenses', label: 'المصروفات', icon: Wallet, group: 'فلوس' },
+    { key: 'cashbox', label: 'الكاشير', icon: ClipboardList, group: 'فلوس' },
+    { key: 'products', label: 'المخزون', icon: Boxes, group: 'المخزون والناس' },
+    { key: 'customers', label: 'العملاء', icon: Users, group: 'المخزون والناس' },
+    { key: 'suppliers', label: 'الموردين', icon: Truck, group: 'المخزون والناس' },
+    { key: 'activity', label: 'سجل النشاط', icon: ActivityIcon, group: 'السجل' },
 ];
 
 /** Sections shown directly in the mobile bottom tab bar; the rest go under "المزيد". */
-export const MOBILE_PRIMARY_SECTIONS = ['', 'sales', 'products', 'cashbox'];
-export const REPORTS_SECTION = { key: 'reports', label: 'التقارير', icon: ClipboardList };
+export const MOBILE_PRIMARY_SECTIONS = ['', 'sales', 'cashbox', 'products'];
+
+/** [{ title, items }] in order, for the sidebar and the "المزيد" sheet. */
+export function groupSections(sections) {
+    const groups = [];
+    for (const s of sections) {
+        let g = groups.find((x) => x.title === s.group);
+        if (!g) {
+            g = { title: s.group, items: [] };
+            groups.push(g);
+        }
+        g.items.push(s);
+    }
+    return groups;
+}

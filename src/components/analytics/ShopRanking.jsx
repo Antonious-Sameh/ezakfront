@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, PackageX, WifiOff } from 'lucide-react';
 import ChangeBadge from './ChangeBadge';
 import { money, pct, count } from './format';
-import { ShopLayout, ShopOverviewPage } from '@/routes/lazyPages';
+import { ShopLayout, ShopSummaryPage } from '@/routes/lazyPages';
 import { preloadOnIntent } from '@/routes/intent';
 
-const shopIntent = preloadOnIntent(() => Promise.all([ShopLayout.preload(), ShopOverviewPage.preload()]));
+const shopIntent = preloadOnIntent(() => Promise.all([ShopLayout.preload(), ShopSummaryPage.preload()]));
 
 /**
  * The four shops ranked by sales for the chosen period: one row per shop,

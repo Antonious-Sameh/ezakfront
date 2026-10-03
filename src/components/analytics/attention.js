@@ -30,12 +30,12 @@ export function buildAttention({ shops = [], compare, position } = {}) {
         if (s.available === false) continue;
         if (s.profit < 0) {
             items.push({
-                key: `loss-${s.shopId}`, tone: 'danger', kind: 'loss', to: `/shops/${s.shopId}/reports`,
+                key: `loss-${s.shopId}`, tone: 'danger', kind: 'loss', to: `/shops/${s.shopId}`,
                 text: `${s.shopName} خسران ${money(-s.profit)} ج.م في الفترة دي (بعد المصروفات)`,
             });
         } else if (typeof s.change?.sales === 'number' && s.change.sales <= DROP_ALERT_PCT) {
             items.push({
-                key: `drop-${s.shopId}`, tone: 'warning', kind: 'drop', to: `/shops/${s.shopId}/reports`,
+                key: `drop-${s.shopId}`, tone: 'warning', kind: 'drop', to: `/shops/${s.shopId}`,
                 text: `مبيعات ${s.shopName} قلت ${pct(Math.abs(s.change.sales))} عن الفترة اللي قبلها`,
             });
         }

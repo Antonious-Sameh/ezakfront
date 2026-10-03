@@ -5,8 +5,8 @@ import { ArrowRight, Check, ChevronDown, Home, MoreHorizontal, Store, X } from '
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
-import { SHOP_SECTIONS, MOBILE_PRIMARY_SECTIONS } from './sectionConfigs';
-import { preloadShopSection, ShopOverviewPage, ShopSectionPage, OverviewPage, AppLayout } from '@/routes/lazyPages';
+import { SHOP_SECTIONS, MOBILE_PRIMARY_SECTIONS, groupSections } from './sectionConfigs';
+import { preloadShopSection, ShopSummaryPage, ShopSectionPage, OverviewPage, AppLayout } from '@/routes/lazyPages';
 import { preloadOnIntent } from '@/routes/intent';
 
 const intentFor = (key) => preloadOnIntent(() => preloadShopSection(key));
@@ -104,9 +104,9 @@ export default function ShopLayout() {
 
     // Once the shop screen is idle, fetch the code of the two page types
     // every section uses (lists + overview), so the first tap on any
-    // section doesn't wait for a download. Reports (charts) stay on-demand.
+    // section doesn't wait for a download.
     useEffect(() => {
-        const warm = () => { ShopSectionPage.preload().catch(() => {}); ShopOverviewPage.preload().catch(() => {}); };
+        const warm = () => { ShopSectionPage.preload().catch(() => {}); ShopSummaryPage.preload().catch(() => {}); };
         if ('requestIdleCallback' in window) {
             const id = window.requestIdleCallback(warm, { timeout: 3000 });
             return () => window.cancelIdleCallback?.(id);
@@ -164,26 +164,30 @@ export default function ShopLayout() {
                 {/* Sidebar Desktop */}
                 <aside className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-64 shrink-0 overflow-y-auto py-6 md:block">
                     <nav className="flex flex-col gap-1 rounded-2xl border border-border bg-card p-3 shadow-sm">
-                        <div className="px-3 py-2 text-[11px] font-bold tracking-wider text-muted-foreground/80 uppercase dir-rtl">
-                            أقسام المحل
-                        </div>
-                        {SHOP_SECTIONS.map((item) => (
-                            <NavLink
-                                key={item.key || 'overview'}
-                                to={sectionPath(shopId, item.key)}
-                                end={item.key === ''}
-                                {...intentFor(item.key)}
-                                className={({ isActive }) =>
-                                    `flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-98 ${
-                                        isActive
-                                            ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
-                                            : 'text-muted-foreground hover:bg-accent/10 hover:text-foreground'
-                                    }`
-                                }
-                            >
-                                <item.icon className="h-4 w-4 shrink-0" strokeWidth={2} />
-                                <span>{item.label}</span>
-                            </NavLink>
+                        {groupSections(SHOP_SECTIONS).map((group) => (
+                            <div key={group.title || 'main'} className="flex flex-col gap-1">
+                                {group.title ? (
+                                    <p className="mt-3 px-3 pb-1 text-[11px] font-bold tracking-wider text-muted-foreground/80 dir-rtl">{group.title}</p>
+                                ) : null}
+                                {group.items.map((item) => (
+                                    <NavLink
+                                        key={item.key || 'summary'}
+                                        to={sectionPath(shopId, item.key)}
+                                        end={item.key === ''}
+                                        {...intentFor(item.key)}
+                                        className={({ isActive }) =>
+                                            `flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-98 ${
+                                                isActive
+                                                    ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
+                                                    : 'text-muted-foreground hover:bg-accent/10 hover:text-foreground'
+                                            }`
+                                        }
+                                    >
+                                        <item.icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                                        <span>{item.label}</span>
+                                    </NavLink>
+                                ))}
+                            </div>
                         ))}
                     </nav>
                 </aside>
@@ -251,8 +255,7 @@ export default function ShopLayout() {
                         {/* Sheet Header */}
                         <div className="mb-3 flex items-center justify-between border-b border-border/60 pb-3 px-1">
                             <div>
-                                <h3 className="text-base font-bold text-foreground">الأقسام الإضافية</h3>
-                                <p className="text-xs text-muted-foreground">اختر القسم الذي تريد الانتقال إليه</p>
+                                <h3 className="text-base font-bold text-foreground">باقي الأقسام</h3>
                             </div>
                             <button
                                 type="button"
@@ -263,31 +266,38 @@ export default function ShopLayout() {
                             </button>
                         </div>
 
-                        {/* Sections List */}
-                        <div className="flex-1 overflow-y-auto space-y-1 py-1">
-                            {more.map((item) => (
-                                <NavLink
-                                    key={item.key}
-                                    to={sectionPath(shopId, item.key)}
-                                    end={item.key === ''}
-                                    {...intentFor(item.key)}
-                                    onClick={() => setMoreOpen(false)}
-                                    className={({ isActive }) =>
-                                        `flex min-h-12 items-center justify-between rounded-xl px-3.5 py-3 text-sm font-medium transition-all active:scale-[0.98] ${
-                                            isActive
-                                                ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                                                : 'text-foreground hover:bg-muted/80 active:bg-muted'
-                                        }`
-                                    }
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/60">
-                                            <item.icon className="h-4 w-4 shrink-0" strokeWidth={2} />
-                                        </div>
-                                        <span>{item.label}</span>
-                                    </div>
-                                    <ChevronDown className="-rotate-90 h-4 w-4 opacity-40" strokeWidth={2} />
-                                </NavLink>
+                        {/* Sections List, grouped like the sidebar */}
+                        <div className="flex-1 space-y-1 overflow-y-auto py-1">
+                            {groupSections(more).map((group) => (
+                                <div key={group.title || 'main'} className="space-y-1">
+                                    {group.title ? (
+                                        <p className="px-3.5 pb-1 pt-3 text-xs font-bold text-muted-foreground">{group.title}</p>
+                                    ) : null}
+                                    {group.items.map((item) => (
+                                        <NavLink
+                                            key={item.key}
+                                            to={sectionPath(shopId, item.key)}
+                                            end={item.key === ''}
+                                            {...intentFor(item.key)}
+                                            onClick={() => setMoreOpen(false)}
+                                            className={({ isActive }) =>
+                                                `flex min-h-12 items-center justify-between rounded-xl px-3.5 py-3 text-sm font-medium transition-all active:scale-[0.98] ${
+                                                    isActive
+                                                        ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                                                        : 'text-foreground hover:bg-muted/80 active:bg-muted'
+                                                }`
+                                            }
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/60">
+                                                    <item.icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                                                </div>
+                                                <span>{item.label}</span>
+                                            </div>
+                                            <ChevronDown className="-rotate-90 h-4 w-4 opacity-40" strokeWidth={2} />
+                                        </NavLink>
+                                    ))}
+                                </div>
                             ))}
                         </div>
                     </div>

@@ -94,7 +94,7 @@ describe('buildAttention', () => {
     it('each item says what happened in plain words and links to where to act', () => {
         const items = buildAttention({ shops, compare, position });
         expect(items.find((i) => i.kind === 'offline')).toMatchObject({ to: '/shops/b', text: expect.stringContaining('محل ب مش بيرد') });
-        expect(items.find((i) => i.kind === 'loss')).toMatchObject({ to: '/shops/c/reports', text: expect.stringContaining('خسران ٥٠') });
+        expect(items.find((i) => i.kind === 'loss')).toMatchObject({ to: '/shops/c', text: expect.stringContaining('خسران ٥٠') });
         // low stock ignores the offline shop, points at the worst online one
         expect(items.find((i) => i.kind === 'stock')).toMatchObject({ to: '/shops/c/products', text: expect.stringContaining('٦ صنف') });
         expect(items.find((i) => i.kind === 'debts')).toMatchObject({ to: '/shops/a/customers' });

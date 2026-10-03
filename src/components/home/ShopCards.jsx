@@ -2,10 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, PackageX, WifiOff } from 'lucide-react';
 import { compactMoney, count } from '@/components/analytics/format';
-import { ShopLayout, ShopOverviewPage } from '@/routes/lazyPages';
+import { ShopLayout, ShopSummaryPage } from '@/routes/lazyPages';
 import { preloadOnIntent } from '@/routes/intent';
 
-const shopIntent = preloadOnIntent(() => Promise.all([ShopLayout.preload(), ShopOverviewPage.preload()]));
+const shopIntent = preloadOnIntent(() => Promise.all([ShopLayout.preload(), ShopSummaryPage.preload()]));
 
 /** Compact figure for a tight card: 55,296 → "٥٥٫٣ ألف". Unknown → "—". */
 const short = (v) => (v === null || v === undefined ? '—' : compactMoney(v));

@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, BrowserRouter as Router, Routes, useLocation, useParams } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
 import PageFallback from './components/PageFallback';
 import { Toaster } from '@/components/ui/sonner';
@@ -10,10 +10,14 @@ import {
 	ShopLayout,
 	LoginPage,
 	OverviewPage,
-	ShopOverviewPage,
+	ShopSummaryPage,
 	ShopSectionPage,
-	ShopReportsPage,
 } from './routes/lazyPages';
+
+function ReportsRedirect() {
+	const { shopId } = useParams();
+	return <Navigate to={`/shops/${shopId}`} replace />;
+}
 
 function RequireAuth({ children }) {
 	const { isAuthenticated } = useAuth();
@@ -55,8 +59,9 @@ function App() {
 							</RequireAuth>
 						}
 					>
-						<Route index element={<ShopOverviewPage />} />
-						<Route path="reports" element={<ShopReportsPage />} />
+						<Route index element={<ShopSummaryPage />} />
+						{/* Reports are part of the summary now; keep old links / bookmarks working. */}
+						<Route path="reports" element={<ReportsRedirect />} />
 						<Route path=":section" element={<ShopSectionPage />} />
 					</Route>
 					<Route path="*" element={<Navigate to="/" replace />} />
