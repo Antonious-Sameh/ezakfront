@@ -74,22 +74,25 @@ describe('buildAttention', () => {
         { id: 'c', name: 'محل ج', status: 'online', lowStockCount: 4 },
     ];
     const compare = {
-        totalOutstanding: 1500,
         byShop: [
-            { shopId: 'a', shopName: 'محل أ', available: true, profit: 100, change: { sales: DROP_ALERT_PCT - 5 }, outstanding: 1000 },
-            { shopId: 'b', shopName: 'محل ب', available: false, profit: 0, change: { sales: null }, outstanding: 0 },
-            { shopId: 'c', shopName: 'محل ج', available: true, profit: -50, change: { sales: 10 }, outstanding: 500 },
+            { shopId: 'a', shopName: 'محل أ', available: true, profit: 100, change: { sales: DROP_ALERT_PCT - 5 } },
+            { shopId: 'b', shopName: 'محل ب', available: false, profit: 0, change: { sales: null } },
+            { shopId: 'c', shopName: 'محل ج', available: true, profit: -50, change: { sales: 10 } },
         ],
+    };
+    const position = {
+        totals: { customersOwe: 1500 },
+        byShop: [{ shopId: 'a', customersOwe: 1000 }, { shopId: 'b', customersOwe: null }, { shopId: 'c', customersOwe: 500 }],
     };
 
     it('lists, most urgent first: offline, loss, sales drop, low stock, debts', () => {
-        const items = buildAttention({ shops, compare });
+        const items = buildAttention({ shops, compare, position });
         expect(items.map((i) => i.kind)).toEqual(['offline', 'drop', 'loss', 'stock', 'debts']);
         expect(items.filter((i) => i.tone === 'danger').map((i) => i.kind)).toEqual(['offline', 'loss']);
     });
 
     it('each item says what happened in plain words and links to where to act', () => {
-        const items = buildAttention({ shops, compare });
+        const items = buildAttention({ shops, compare, position });
         expect(items.find((i) => i.kind === 'offline')).toMatchObject({ to: '/shops/b', text: expect.stringContaining('محل ب مش بيرد') });
         expect(items.find((i) => i.kind === 'loss')).toMatchObject({ to: '/shops/c/reports', text: expect.stringContaining('خسران ٥٠') });
         // low stock ignores the offline shop, points at the worst online one
@@ -100,7 +103,8 @@ describe('buildAttention', () => {
     it('nothing to say when everything is fine', () => {
         const fine = buildAttention({
             shops: [{ id: 'a', name: 'أ', status: 'online', lowStockCount: 0 }],
-            compare: { totalOutstanding: 0, byShop: [{ shopId: 'a', shopName: 'أ', available: true, profit: 10, change: { sales: -5 } }] },
+            compare: { byShop: [{ shopId: 'a', shopName: 'أ', available: true, profit: 10, change: { sales: -5 } }] },
+            position: { totals: { customersOwe: 0 }, byShop: [] },
         });
         expect(fine).toEqual([]);
     });

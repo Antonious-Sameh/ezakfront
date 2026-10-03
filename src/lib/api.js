@@ -107,6 +107,10 @@ export const api = {
 			? withMock((m) => m.getCompareReport(from, to))
 			: request(`/api/reports/compare?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, { token, signal: opts.signal }),
 
+	/** GET /api/reports/position — what customers owe, stock value, cash, per shop and in total. */
+	getPosition: (token, opts = {}) =>
+		USE_MOCK ? withMock((m) => m.getPosition()) : request('/api/reports/position', { token, signal: opts.signal }),
+
 	// --- Shop detail endpoints (Part 2) ---
 
 	/** GET /api/shops/:shopId/overview */

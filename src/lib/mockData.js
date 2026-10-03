@@ -260,12 +260,15 @@ function getShops() {
 			.filter((s) => s.date.slice(0, 10) === today)
 			.reduce((sum, s) => sum + s.total, 0);
 		const lowStockCount = ds.products.filter((p) => p.status !== 'ok').length;
+		const month = today.slice(0, 7);
+		const monthSales = ds.sales.filter((s) => s.date.slice(0, 7) === month).reduce((sum, s) => sum + s.total, 0);
 		return {
 			id,
 			name,
 			area: SHOP_AREAS[i],
 			status: i === 1 ? 'offline' : 'online',
 			todaySales,
+			monthSales,
 			lowStockCount,
 			logoUrl: null,
 		};
@@ -551,6 +554,34 @@ function shopIndex(shopId) {
 
 export const mock = {
 	getShops: () => ({ success: true, data: getShops() }),
+
+	// Same shape as the real backend (Phase 17): debts, stock and cash per shop + totals.
+	getPosition: () => {
+		const r2 = (v) => Math.round(v * 100) / 100;
+		const byShop = getShops().map((s) => {
+			const ds = buildShop(s.id, shopIndex(s.id));
+			if (s.status === 'offline') {
+				return { shopId: s.id, shopName: s.name, available: false, customersOwe: null, customersOweCount: null, suppliersOwed: null, cash: null, stockCost: null, stockSale: null, productsCount: null, lowCount: null };
+			}
+			const cash = ds.cashbox.reduce((a, c) => a + (c.type === 'in' ? c.amount : -c.amount), 0);
+			return {
+				shopId: s.id, shopName: s.name, available: true,
+				customersOwe: ds.customers.reduce((a, c) => a + (c.balance || 0), 0),
+				customersOweCount: ds.customers.filter((c) => c.balance > 0).length,
+				suppliersOwed: ds.suppliers.reduce((a, x) => a + (x.balance || 0), 0),
+				cash,
+				stockCost: ds.products.reduce((a, x) => a + x.cost * x.stock, 0),
+				stockSale: ds.products.reduce((a, x) => a + x.price * x.stock, 0),
+				productsCount: ds.products.length,
+				lowCount: ds.products.filter((x) => x.status !== 'ok').length,
+			};
+		});
+		const sum = (k) => r2(byShop.reduce((a, r) => a + (r[k] ?? 0), 0));
+		const totals = { customersOwe: sum('customersOwe'), suppliersOwed: sum('suppliersOwed'), cash: sum('cash'), stockCost: sum('stockCost'), stockSale: sum('stockSale') };
+		totals.net = r2(totals.cash + totals.stockCost + totals.customersOwe - totals.suppliersOwed);
+		totals.complete = byShop.every((r) => r.available);
+		return { success: true, data: { generatedAt: new Date().toISOString(), totals, byShop } };
+	},
 	// Same shape as the real backend (Phase 12): totals, previous period,
 	// % change, per-shop share / rank / margin / debts, combined day series.
 	getCompareReport: (from, to) => {
@@ -578,14 +609,12 @@ export const mock = {
 				dayMap[d].sales += row.total;
 				dayMap[d].profit += row.profit ?? 0;
 			});
-			const outstanding = ds.customers.reduce((a, c) => a + (c.balance || 0), 0);
 			return {
 				shopId: s.id, shopName: s.name, ...cur,
 				margin: cur.sales ? Math.round((cur.profit / cur.sales) * 1000) / 10 : 0,
 				available: s.status !== 'offline',
 				previous: { sales: prev.sales, profit: prev.profit },
 				change: { sales: pct(cur.sales, prev.sales), profit: pct(cur.profit, prev.profit) },
-				outstanding,
 			};
 		});
 		const totalSales = rows.reduce((a, x) => a + x.sales, 0);
@@ -606,7 +635,6 @@ export const mock = {
 				totalSales, totalProfit,
 				totalInvoices: rows.reduce((a, x) => a + x.invoices, 0),
 				margin: totalSales ? Math.round((totalProfit / totalSales) * 1000) / 10 : 0,
-				totalOutstanding: rows.reduce((a, x) => a + x.outstanding, 0),
 				previous: { sales: prevSales, profit: prevProfit },
 				change: { sales: pct(totalSales, prevSales), profit: pct(totalProfit, prevProfit) },
 				shopsAvailable: ranked.length,

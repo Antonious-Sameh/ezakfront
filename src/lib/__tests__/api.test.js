@@ -122,3 +122,37 @@ describe('api client — cancellation & new endpoints', () => {
     expect(fetchMock.mock.calls[1][0]).toBe('https://s5.example.com/api/shops/shop2/expenses/reasons');
   });
 });
+
+describe('api client — position ("معانا كام")', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('calls /api/reports/position with the token', async () => {
+    const { api } = await loadApi();
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ success: true, data: { totals: {}, byShop: [] } }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await api.getPosition('tok');
+
+    expect(fetchMock.mock.calls[0][0]).toBe('https://s5.example.com/api/reports/position');
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe('Bearer tok');
+  });
+
+  it('demo mode returns the same shape, with an offline shop shown as unknown (null), not 0', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_API_BASE_URL', '');
+    const { api } = await import('@/lib/api');
+
+    const res = await api.getPosition('tok');
+
+    expect(res.data.byShop).toHaveLength(4);
+    const offline = res.data.byShop.find((s) => !s.available);
+    expect(offline).toMatchObject({ customersOwe: null, stockCost: null, cash: null });
+    expect(res.data.totals.complete).toBe(false);
+    expect(res.data.totals.net).toBe(
+      Math.round((res.data.totals.cash + res.data.totals.stockCost + res.data.totals.customersOwe - res.data.totals.suppliersOwed) * 100) / 100,
+    );
+  });
+});

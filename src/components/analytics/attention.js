@@ -2,14 +2,15 @@ import { money, pct, count } from './format';
 
 /**
  * "محتاج انتباهك" — the few things on the home page the owner should act on,
- * most urgent first. Pure function of the two API answers (easy to test).
+ * most urgent first. Pure function of the API answers (easy to test).
  *
- * shops:   GET /api/shops (status, lowStockCount per shop)
- * compare: GET /api/reports/compare (per-shop sales / profit / change / debts)
+ * shops:    GET /api/shops (status, lowStockCount per shop)
+ * compare:  GET /api/reports/compare (per-shop sales / profit / change)
+ * position: GET /api/reports/position (what customers owe, per shop and in total)
  */
 export const DROP_ALERT_PCT = -20;
 
-export function buildAttention({ shops = [], compare } = {}) {
+export function buildAttention({ shops = [], compare, position } = {}) {
     const items = [];
     const byShop = compare?.byShop || [];
     const nameOf = (id) => shops.find((s) => s.id === id)?.name || byShop.find((s) => s.shopId === id)?.shopName || '';
@@ -52,11 +53,12 @@ export function buildAttention({ shops = [], compare } = {}) {
         });
     }
 
-    if (Number(compare?.totalOutstanding) > 0) {
-        const worst = [...byShop].sort((a, b) => (b.outstanding || 0) - (a.outstanding || 0))[0];
+    const owe = Number(position?.totals?.customersOwe);
+    if (owe > 0) {
+        const worst = [...(position.byShop || [])].sort((x, y) => (y.customersOwe || 0) - (x.customersOwe || 0))[0];
         items.push({
             key: 'debts', tone: 'info', kind: 'debts', to: worst ? `/shops/${worst.shopId}/customers` : undefined,
-            text: `${money(compare.totalOutstanding)} ج.م لسه على العملاء ومتحصّلتش`,
+            text: `${money(owe)} ج.م لسه على العملاء ومتحصّلتش`,
         });
     }
 

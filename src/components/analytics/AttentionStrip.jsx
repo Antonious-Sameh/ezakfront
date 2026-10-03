@@ -10,14 +10,16 @@ const TONES = {
 };
 
 /** The "needs your attention" list. Renders nothing when all is well. */
-export default function AttentionStrip({ items }) {
+export default function AttentionStrip({ items, bare = false }) {
     if (!items?.length) return null;
     return (
-        <section aria-labelledby="attention-title" className="flex flex-col gap-2.5">
-            <h2 id="attention-title" className="flex items-center gap-2 font-display text-base font-bold text-foreground">
-                <AlertTriangle className="h-4 w-4 text-amber-600" strokeWidth={2.5} aria-hidden="true" />
-                محتاج انتباهك
-            </h2>
+        <section aria-labelledby={bare ? undefined : 'attention-title'} aria-label={bare ? 'اللي محتاج انتباهك' : undefined} className="flex flex-col gap-2.5">
+            {bare ? null : (
+                <h2 id="attention-title" className="flex items-center gap-2 font-display text-base font-bold text-foreground">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" strokeWidth={2.5} aria-hidden="true" />
+                    محتاج انتباهك
+                </h2>
+            )}
             <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2">
                 {items.map((item) => {
                     const Icon = ICONS[item.kind] || AlertTriangle;
