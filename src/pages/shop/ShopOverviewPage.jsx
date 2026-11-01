@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { ErrorState } from '@/components/StateViews';
 import KpiCard from '@/components/analytics/KpiCard';
-import { money, count } from '@/components/analytics/format';
+import { money, count, qty } from '@/components/analytics/format';
 
 /**
  * A shop's "right now": today's money first (sales, profit, cash in the
@@ -81,11 +81,11 @@ export default function ShopOverviewPage() {
                 <>
                     {/* Today's money */}
                     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                        <KpiCard kind="sales" label="مبيعات النهارده" value={money(data.todaySales)} unit="ج.م" sub={`${count(data.todayOrders)} فاتورة`} />
+                        <KpiCard kind="sales" label="مبيعات النهارده" value={money(data.todaySales)} amount={data.todaySales} unit="ج.م" sub={`${count(data.todayOrders)} فاتورة`} />
                         <KpiCard
                             kind={data.todayProfit < 0 ? 'loss' : 'profit'}
                             label="ربح النهارده"
-                            value={money(data.todayProfit)}
+                            value={money(data.todayProfit)} amount={data.todayProfit}
                             unit="ج.م"
                             valueClass={data.todayProfit < 0 ? 'text-rose-600' : 'text-emerald-700 dark:text-emerald-400'}
                             sub="بعد التكلفة والمصروفات"
@@ -93,12 +93,12 @@ export default function ShopOverviewPage() {
                         <KpiCard
                             kind={data.cashboxBalance < 0 ? 'loss' : 'neutral'}
                             label="رصيد الكاشير"
-                            value={money(data.cashboxBalance)}
+                            value={money(data.cashboxBalance)} amount={data.cashboxBalance}
                             unit="ج.م"
                             valueClass={data.cashboxBalance < 0 ? 'text-rose-600' : ''}
                             sub="الفلوس اللي في الدرج دلوقتي"
                         />
-                        <KpiCard kind="sales" label="مبيعات الشهر لحد النهارده" value={money(data.monthSales)} unit="ج.م" />
+                        <KpiCard kind="sales" label="مبيعات الشهر لحد النهارده" value={money(data.monthSales)} amount={data.monthSales} unit="ج.م" />
                     </div>
 
                     {/* The shop's size + what to act on */}
@@ -135,7 +135,7 @@ export default function ShopOverviewPage() {
                                     </div>
                                     <div>
                                         <h2 className="font-display text-base font-bold text-foreground">
-                                            أصناف محتاجة تتطلب
+                                            أصناف ناقصة أو خلصت
                                         </h2>
                                         <p className="text-[11px] text-muted-foreground">
                                             وصلت لحد التنبيه أو خلصت
@@ -174,7 +174,7 @@ export default function ShopOverviewPage() {
                                                         : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
                                                 }`}
                                             >
-                                                {isOut ? 'خلص' : `فاضل ${count(p.stock)}${p.unit ? ` ${p.unit}` : ''}`}
+                                                {isOut ? 'خلص' : `فاضل ${qty(p.stock)}${p.unit ? ` ${p.unit}` : ''}`}
                                             </span>
                                         </li>
                                     );

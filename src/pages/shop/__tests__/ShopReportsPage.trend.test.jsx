@@ -114,7 +114,7 @@ describe('ShopReportsPage', () => {
         expect(screen.getByText('تكلفة البضاعة المباعة', { exact: false })).toBeInTheDocument();
         expect(screen.getByText('فلتر زيت')).toBeInTheDocument();
         expect(screen.getByText('ربح متوقع لو اتباع')).toBeInTheDocument();
-        expect(screen.getByText(/عليه ٢٬٠٠٠/)).toBeInTheDocument();
+        expect(screen.getByText(/عليه ٢,٠٠٠/)).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'شوف الأصناف الناقصة' })).toHaveAttribute('href', '/shops/shop1/products');
     });
 

@@ -40,8 +40,8 @@ describe('cashbox / expenses summary cards show the real figures (they used to r
         renderAt('/shops/shop1/cashbox');
 
         await screen.findByText('الرصيد الحالي');
-        expect(card('الرصيد الحالي')).toHaveTextContent('٣٬٥٠٠');
-        expect(card('داخل النهارده')).toHaveTextContent('١٬٢٠٠');
+        expect(card('الرصيد الحالي')).toHaveTextContent('٣,٥٠٠');
+        expect(card('داخل النهارده')).toHaveTextContent('١,٢٠٠');
         expect(card('خارج النهارده')).toHaveTextContent('٣٠٠');
         expect(card('صافي النهارده')).toHaveTextContent('٩٠٠');
         expect(screen.queryByText('إجمالي داخل')).not.toBeInTheDocument();
@@ -53,7 +53,7 @@ describe('cashbox / expenses summary cards show the real figures (they used to r
 
         await screen.findByText('مصروفات النهارده');
         expect(card('مصروفات النهارده')).toHaveTextContent('١٥٠');
-        expect(card('مصروفات الشهر')).toHaveTextContent('٢٬٤٠٠');
+        expect(card('مصروفات الشهر')).toHaveTextContent('٢,٤٠٠');
         expect(within(document.body).queryByText('عدد التصنيفات')).not.toBeInTheDocument();
     });
 });

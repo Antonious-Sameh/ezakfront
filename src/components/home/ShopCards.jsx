@@ -1,20 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, PackageX, WifiOff } from 'lucide-react';
-import { compactMoney, count } from '@/components/analytics/format';
+import { count, money } from '@/components/analytics/format';
 import { ShopLayout, ShopSummaryPage } from '@/routes/lazyPages';
 import { preloadOnIntent } from '@/routes/intent';
 
 const shopIntent = preloadOnIntent(() => Promise.all([ShopLayout.preload(), ShopSummaryPage.preload()]));
 
-/** Compact figure for a tight card: 55,296 → "٥٥٫٣ ألف". Unknown → "—". */
-const short = (v) => (v === null || v === undefined ? '—' : compactMoney(v));
+/** The exact amount, never shortened (a phone has no hover): 55,296 → "٥٥,٢٩٦". Unknown → "—". */
+const short = (v) => (v === null || v === undefined ? '—' : money(v));
 
 function Row({ label, value, tone = '' }) {
     return (
-        <div className="flex items-baseline justify-between gap-2 py-[3px]">
+        // Label above the figure on a phone (two cards per row leave ~130px: a
+        // 7-digit amount next to its label did not fit); side by side from sm up.
+        <div className="flex flex-col gap-0.5 py-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2 sm:py-[3px]">
             <dt className="text-xs text-muted-foreground">{label}</dt>
-            <dd className={`font-display text-sm font-bold tabular-nums ${tone || 'text-foreground'}`}>{value}</dd>
+            <dd className={`whitespace-nowrap font-display text-base font-bold tabular-nums sm:text-sm ${tone || 'text-foreground'}`}>
+                {value}
+                {value !== '—' ? <span className="ms-1 text-[10px] font-medium text-muted-foreground">ج.م</span> : null}
+            </dd>
         </div>
     );
 }

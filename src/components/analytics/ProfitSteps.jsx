@@ -42,12 +42,12 @@ export default function ProfitSteps({ profit }) {
                     return (
                         <li
                             key={s.key}
-                            className={`grid grid-cols-[minmax(0,9rem)_1fr_auto] items-center gap-3 ${isFinal ? 'mt-1 border-t border-border pt-3' : ''}`}
+                            className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 sm:grid-cols-[minmax(0,9rem)_1fr_auto] ${isFinal ? 'mt-1 border-t border-border pt-3' : ''}`}
                         >
                             <span className={`text-sm ${s.kind === 'minus' ? 'ps-3 text-muted-foreground' : 'font-semibold text-foreground'}`}>
                                 {s.kind === 'minus' ? '− ' : ''}{s.label}
                             </span>
-                            <span className="h-2.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                            <span className="order-last col-span-2 h-2.5 overflow-hidden rounded-full bg-muted sm:order-none sm:col-span-1" aria-hidden="true">
                                 <span className={`block h-full rounded-full ${barClass}`} style={{ width: `${s.width}%` }} />
                             </span>
                             <span
@@ -57,7 +57,7 @@ export default function ProfitSteps({ profit }) {
                                         : s.kind === 'minus' ? 'text-sm text-amber-700 dark:text-amber-400' : 'text-sm font-bold text-foreground'
                                 }`}
                             >
-                                {isFinal ? money(s.value || 0) : money(Math.abs(s.value || 0))}
+                                {isFinal ? money(s.value || 0) : money(Math.abs(s.value || 0))}<span className="ms-1 text-[10px] font-medium text-muted-foreground">ج.م</span>
                             </span>
                         </li>
                     );

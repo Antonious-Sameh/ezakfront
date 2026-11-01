@@ -1,6 +1,6 @@
 import React from 'react';
 import { HandCoins, Boxes, Wallet, Truck } from 'lucide-react';
-import { money } from '@/components/analytics/format';
+import { money, scaleHint, figureSize } from '@/components/analytics/format';
 
 /**
  * "معانا كام" — the four figures the owner looks for first, summed across
@@ -25,10 +25,11 @@ function Tile({ icon: Icon, label, value, sub, tone }) {
                 </span>
                 <p className="truncate text-xs font-medium text-muted-foreground">{label}</p>
             </div>
-            <p className="mt-2 font-display text-xl font-extrabold tabular-nums text-foreground sm:text-2xl">
-                {value === null ? '—' : money(value)}
+            <p className={`mt-2 font-display font-extrabold tabular-nums text-foreground ${figureSize(value === null ? '' : money(value), { base: 'text-xl', sm: 'sm:text-2xl' })}`}>
+                {value === null ? '—' : <span className="whitespace-nowrap">{money(value)}</span>}
                 {value !== null ? <span className="ms-1 text-xs font-medium text-muted-foreground">ج.م</span> : null}
             </p>
+            {value !== null && scaleHint(value) ? <p className="mt-0.5 text-[11px] font-semibold text-foreground/70">{scaleHint(value)}</p> : null}
             {sub ? <p className="mt-0.5 hidden text-[11px] text-muted-foreground sm:block">{sub}</p> : null}
         </div>
     );
@@ -57,6 +58,7 @@ export default function PositionStrip({ position }) {
                     <p className="font-display text-2xl font-extrabold tabular-nums" data-testid="position-net">
                         {money(t.net)} <span className="text-sm font-semibold text-white/60">ج.م</span>
                     </p>
+                    {scaleHint(t.net) ? <p className="text-xs font-semibold text-white/70">{scaleHint(t.net)}</p> : null}
                 </div>
                 <p className="max-w-xs text-[11px] leading-relaxed text-white/60">
                     كاش + بضاعة بالتكلفة + لينا عند العملاء − علينا للموردين

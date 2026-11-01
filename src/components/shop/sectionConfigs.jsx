@@ -8,12 +8,12 @@ import {
     ArrowDownCircle, ArrowUpCircle, Boxes, ClipboardList, Receipt, ShoppingCart,
     Users, Truck, Wallet, Activity as ActivityIcon,
 } from 'lucide-react';
-import { formatNumber, formatDate } from '@/lib/format';
+import { formatNumber, formatMoney, formatDate } from '@/lib/format';
 import { PAYMENT_LABELS, ACTIVITY_LABELS_REAL, AR_LOCALE } from '@/lib/constants';
 
 const num = (v) => formatNumber(v, { locale: AR_LOCALE });
-/** Plain money text: Arabic digits, at most 2 decimals. */
-export const moneyText = (v) => formatNumber(v, { locale: AR_LOCALE, maximumFractionDigits: 2 });
+/** Plain money text: Arabic digits, piastres (when any) as two digits. */
+export const moneyText = (v) => formatMoney(v, { locale: AR_LOCALE });
 
 /**
  * A money amount as shown everywhere in the dashboard: the number, then a
@@ -163,26 +163,26 @@ function DetailGrid({ fields }) {
 /** Items table for invoices (sales / purchases). */
 function ItemsTable({ items, moneyKey }) {
     return (
-        <div className="overflow-hidden rounded-lg border border-border shadow-xs">
+        <div className="overflow-x-auto rounded-lg border border-border shadow-xs">
             <table className="w-full text-sm border-collapse">
                 <thead className="bg-muted/70 text-xs text-muted-foreground border-b border-border">
                     <tr>
-                        <th className="px-3.5 py-2.5 text-start font-semibold">المنتج</th>
-                        <th className="px-3.5 py-2.5 text-center font-semibold">الكمية</th>
-                        <th className="px-3.5 py-2.5 text-end font-semibold">السعر</th>
-                        <th className="px-3.5 py-2.5 text-end font-semibold">الإجمالي</th>
+                        <th className="px-2 py-2.5 text-start font-semibold sm:px-3.5">المنتج</th>
+                        <th className="px-2 py-2.5 text-center font-semibold sm:px-3.5">الكمية</th>
+                        <th className="px-2 py-2.5 text-end font-semibold sm:px-3.5">السعر (ج.م)</th>
+                        <th className="px-2 py-2.5 text-end font-semibold sm:px-3.5">الإجمالي (ج.م)</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60 bg-card text-card-foreground">
                     {(items || []).map((it, i) => (
                         <tr key={i} className="transition-colors hover:bg-muted/40">
-                            <td className="px-3.5 py-2.5 text-start font-medium text-foreground">
+                            <td className="px-2 py-2.5 text-start font-medium text-foreground sm:px-3.5">
                                 {it.productName}
                                 {it.code ? <span className="ms-2 font-mono text-[11px] text-muted-foreground" dir="ltr">{it.code}</span> : null}
                             </td>
-                            <td className="px-3.5 py-2.5 text-center font-mono text-xs tabular-nums text-muted-foreground">{num(it.qty)}</td>
-                            <td className="px-3.5 py-2.5 text-end font-mono text-xs tabular-nums text-muted-foreground">{moneyText(it[moneyKey === 'cost' ? 'cost' : 'price'])}</td>
-                            <td className="px-3.5 py-2.5 text-end font-mono text-xs font-semibold tabular-nums text-foreground">{moneyText(it.total)}</td>
+                            <td className="px-2 py-2.5 text-center font-mono text-xs tabular-nums text-muted-foreground sm:px-3.5">{num(it.qty)}</td>
+                            <td className="whitespace-nowrap px-2 py-2.5 text-end font-mono text-xs tabular-nums text-muted-foreground sm:px-3.5">{moneyText(it[moneyKey === 'cost' ? 'cost' : 'price'])}</td>
+                            <td className="whitespace-nowrap px-2 py-2.5 text-end font-mono text-xs font-semibold tabular-nums text-foreground sm:px-3.5">{moneyText(it.total)}</td>
                         </tr>
                     ))}
                 </tbody>

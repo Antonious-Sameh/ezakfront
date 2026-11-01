@@ -13,7 +13,7 @@ import SplitBar from '@/components/analytics/SplitBar';
 import RankedBars from '@/components/analytics/RankedBars';
 import Disclosure from '@/components/analytics/Disclosure';
 import { PERIODS, periodById, periodRange } from '@/components/analytics/periods';
-import { money, pct, count } from '@/components/analytics/format';
+import { money, pct, count, qty, scaleHint, figureSize } from '@/components/analytics/format';
 
 /**
  * One page per shop: "how is this shop doing?" — what used to be two pages
@@ -83,7 +83,7 @@ function PeriodTabs({ value, onChange }) {
                     type="button"
                     onClick={() => onChange(p.id)}
                     aria-pressed={value === p.id}
-                    className={`min-h-9 flex-1 whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition-colors sm:flex-none sm:text-sm ${
+                    className={`min-h-11 flex-1 whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition-colors sm:flex-none sm:text-sm ${
                         value === p.id ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
@@ -125,10 +125,11 @@ function NowTile({ icon: Icon, label, value, tone, to, hint }) {
                 </span>
                 <p className="truncate text-xs font-medium text-muted-foreground">{label}</p>
             </div>
-            <p className={`mt-2 font-display text-xl font-extrabold tabular-nums sm:text-2xl ${value !== null && value < 0 ? 'text-rose-600' : 'text-foreground'}`}>
-                {value === null || value === undefined ? '—' : money(value)}
+            <p className={`mt-2 font-display font-extrabold tabular-nums ${figureSize(value === null || value === undefined ? '' : money(value), { base: 'text-xl', sm: 'sm:text-2xl' })} ${value !== null && value < 0 ? 'text-rose-600' : 'text-foreground'}`}>
+                {value === null || value === undefined ? '—' : <span className="whitespace-nowrap">{money(value)}</span>}
                 {value !== null && value !== undefined ? <span className="ms-1 text-xs font-medium text-muted-foreground">ج.م</span> : null}
             </p>
+            {value !== null && value !== undefined && scaleHint(value) ? <p className="mt-0.5 text-[11px] font-semibold text-foreground/70">{scaleHint(value)}</p> : null}
             {hint ? <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p> : null}
         </>
     );
@@ -163,7 +164,7 @@ function LowStockPanel({ items, total, shopId }) {
                                         : 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-400'
                                 }`}
                             >
-                                {isOut ? 'خلص' : `فاضل ${count(p.stock)}${p.unit ? ` ${p.unit}` : ''}`}
+                                {isOut ? 'خلص' : `فاضل ${qty(p.stock)}${p.unit ? ` ${p.unit}` : ''}`}
                             </span>
                         </li>
                     );
@@ -254,20 +255,20 @@ export default function ShopSummaryPage() {
                 ) : (
                     <div className={`flex flex-col gap-6 transition-opacity ${per.fetching ? 'opacity-70' : ''}`} aria-busy={per.fetching}>
                         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                            <KpiCard kind="sales" label="صافي المبيعات" value={money(per.data.sales.totalSales)} unit="ج.م"
+                            <KpiCard kind="sales" label="صافي المبيعات" value={money(per.data.sales.totalSales)} amount={per.data.sales.totalSales} unit="ج.م"
                                 change={per.data.sales.change?.totalSales} sub={`${count(per.data.sales.count)} فاتورة`} />
                             <KpiCard
                                 kind={per.data.profit.totalProfit < 0 ? 'loss' : 'profit'}
                                 label="صافي الربح"
-                                value={money(per.data.profit.totalProfit)}
+                                value={money(per.data.profit.totalProfit)} amount={per.data.profit.totalProfit}
                                 unit="ج.م"
                                 valueClass={per.data.profit.totalProfit < 0 ? 'text-rose-600' : ''}
                                 change={per.data.profit.change?.totalProfit}
                                 sub={`هامش ${pct(per.data.profit.margin)}`}
                             />
-                            <KpiCard kind="cost" label="المشتريات" value={money(per.data.purchases.totalPurchases)} unit="ج.م"
+                            <KpiCard kind="cost" label="المشتريات" value={money(per.data.purchases.totalPurchases)} amount={per.data.purchases.totalPurchases} unit="ج.م"
                                 change={per.data.purchases.change?.totalPurchases} changeProps={{ neutral: true }} sub={`${count(per.data.purchases.count)} فاتورة شراء`} />
-                            <KpiCard kind="neutral" label="متوسط الفاتورة" value={money(per.data.sales.avgInvoice)} unit="ج.م"
+                            <KpiCard kind="neutral" label="متوسط الفاتورة" value={money(per.data.sales.avgInvoice)} amount={per.data.sales.avgInvoice} unit="ج.م"
                                 change={per.data.sales.change?.avgInvoice} sub={per.data.sales.returns > 0 ? `مرتجعات ${money(per.data.sales.returns)}` : undefined} />
                         </div>
 
@@ -319,7 +320,7 @@ export default function ShopSummaryPage() {
                                     key: `${p.name}-${i}`,
                                     label: p.name,
                                     barValue: p.total || p.qty,
-                                    end: <>{money(p.total)} <span className="text-xs text-muted-foreground">({count(p.qty)} قطعة)</span></>,
+                                    end: <>{money(p.total)} <span className="text-xs text-muted-foreground">ج.م</span> <span className="text-xs text-muted-foreground">({qty(p.qty)} قطعة)</span></>,
                                 }))}
                             />
                         </Panel>
@@ -341,7 +342,7 @@ export default function ShopSummaryPage() {
                             <RankedBars
                                 emptyText="مفيش عملاء متسجلين"
                                 rows={(now.data.customers.topCustomers || []).slice(0, 6).map((c) => ({
-                                    key: c.id || c.name, label: c.name, barValue: c.totalSpent, end: money(c.totalSpent),
+                                    key: c.id || c.name, label: c.name, barValue: c.totalSpent, end: <>{money(c.totalSpent)} <span className="text-xs text-muted-foreground">ج.م</span></>,
                                     note: c.remaining > 0 ? <span className="font-semibold text-rose-600">عليه {money(c.remaining)} ج.م</span> : null,
                                 }))}
                             />
@@ -355,7 +356,7 @@ export default function ShopSummaryPage() {
                                 barClass="bg-amber-400"
                                 emptyText="مفيش موردين متسجلين"
                                 rows={(now.data.suppliers.topSuppliers || []).slice(0, 6).map((s) => ({
-                                    key: s.id || s.name, label: s.name, barValue: s.totalAmount, end: money(s.totalAmount),
+                                    key: s.id || s.name, label: s.name, barValue: s.totalAmount, end: <>{money(s.totalAmount)} <span className="text-xs text-muted-foreground">ج.م</span></>,
                                     note: s.remaining > 0 ? <span className="font-semibold text-amber-700 dark:text-amber-400">له {money(s.remaining)} ج.م</span> : null,
                                 }))}
                             />

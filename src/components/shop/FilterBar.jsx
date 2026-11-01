@@ -40,7 +40,7 @@ function DebouncedSearch({ value, onChange, placeholder }) {
             placeholder={placeholder}
             aria-label="بحث"
             enterKeyHint="search"
-            className="min-h-[44px] w-full rounded-xl border border-input/80 bg-background/50 ps-10 pe-4 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10 shadow-2xs"
+            className="min-h-[44px] w-full rounded-xl border border-input/80 bg-background/50 ps-10 pe-4 py-2 text-base sm:text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10 shadow-2xs"
         />
     );
 }
@@ -92,7 +92,7 @@ export default function FilterBar({
                                 onChange={(e) => onDateChange('from', e.target.value)}
                                 max={to || undefined}
                                 aria-label="من تاريخ"
-                                className="min-h-[42px] w-full rounded-xl border border-input/80 bg-background/50 px-3 py-2 text-xs font-semibold sm:text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10 shadow-2xs"
+                                className="min-h-[44px] w-full rounded-xl border border-input/80 bg-background/50 px-3 py-2 text-base font-semibold sm:text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10 shadow-2xs"
                             />
                         </label>
                     </div>
@@ -109,7 +109,7 @@ export default function FilterBar({
                                 onChange={(e) => onDateChange('to', e.target.value)}
                                 min={from || undefined}
                                 aria-label="إلى تاريخ"
-                                className="min-h-[42px] w-full rounded-xl border border-input/80 bg-background/50 px-3 py-2 text-xs font-semibold sm:text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10 shadow-2xs"
+                                className="min-h-[44px] w-full rounded-xl border border-input/80 bg-background/50 px-3 py-2 text-base font-semibold sm:text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10 shadow-2xs"
                             />
                         </label>
                     </div>
@@ -128,13 +128,13 @@ export default function FilterBar({
                                 تصفية حسب:
                             </span>
                             {extraFilters.map((f) => (
-                                <div key={f.key} className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-xl border border-border/50">
+                                <div key={f.key} className="flex w-full items-center justify-between gap-1.5 bg-muted/40 p-1 rounded-xl border border-border/50 sm:w-auto sm:justify-start">
                                     <span className="text-xs font-medium text-muted-foreground px-1.5">{f.label}</span>
                                     <select
                                         value={extras[f.key] || 'all'}
                                         onChange={(e) => onExtraChange(f.key, e.target.value)}
                                         aria-label={f.label}
-                                        className="min-h-[34px] rounded-lg border border-input/80 bg-background px-3 py-1 text-xs font-semibold text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-2xs cursor-pointer"
+                                        className="min-h-[44px] rounded-lg border border-input/80 bg-background px-3 py-1 text-base font-semibold sm:min-h-[36px] sm:text-xs text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-2xs cursor-pointer"
                                     >
                                         {f.options.map((o) => (
                                             <option key={o.value} value={o.value}>{o.label}</option>
@@ -149,7 +149,7 @@ export default function FilterBar({
                         <button
                             type="button"
                             onClick={onReset}
-                            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-1.5 text-xs font-bold text-destructive transition-all hover:bg-destructive hover:text-destructive-foreground active:scale-[0.97] ms-auto"
+                            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-1.5 text-xs font-bold text-destructive transition-all hover:bg-destructive hover:text-destructive-foreground active:scale-[0.97] ms-auto"
                         >
                             <X className="h-3.5 w-3.5" strokeWidth={2.5} />
                             مسح الفلاتر

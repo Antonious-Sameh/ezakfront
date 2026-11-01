@@ -41,16 +41,16 @@ function SummaryBand({ shopId, kind }) {
                 <KpiCard
                     kind={data.balance < 0 ? 'loss' : 'neutral'}
                     label="الرصيد الحالي"
-                    value={moneyText(data.balance)}
+                    value={moneyText(data.balance)} amount={data.balance}
                     unit="ج.م"
                     valueClass={data.balance < 0 ? 'text-rose-600' : ''}
                 />
-                <KpiCard kind="profit" label="داخل النهارده" value={moneyText(data.todayIn)} unit="ج.م" valueClass="text-emerald-700 dark:text-emerald-400" />
-                <KpiCard kind="cost" label="خارج النهارده" value={moneyText(data.todayOut)} unit="ج.م" valueClass="text-amber-700 dark:text-amber-400" />
+                <KpiCard kind="profit" label="داخل النهارده" value={moneyText(data.todayIn)} amount={data.todayIn} unit="ج.م" valueClass="text-emerald-700 dark:text-emerald-400" />
+                <KpiCard kind="cost" label="خارج النهارده" value={moneyText(data.todayOut)} amount={data.todayOut} unit="ج.م" valueClass="text-amber-700 dark:text-amber-400" />
                 <KpiCard
                     kind={data.todayNet < 0 ? 'loss' : 'profit'}
                     label="صافي النهارده"
-                    value={moneyText(data.todayNet)}
+                    value={moneyText(data.todayNet)} amount={data.todayNet}
                     unit="ج.م"
                     valueClass={data.todayNet < 0 ? 'text-rose-600' : ''}
                 />
@@ -60,8 +60,8 @@ function SummaryBand({ shopId, kind }) {
 
     return (
         <div className="mb-6 grid grid-cols-2 gap-3">
-            <KpiCard kind="cost" label="مصروفات النهارده" value={moneyText(data.todayTotal)} unit="ج.م" />
-            <KpiCard kind="cost" label="مصروفات الشهر" value={moneyText(data.monthTotal)} unit="ج.م" />
+            <KpiCard kind="cost" label="مصروفات النهارده" value={moneyText(data.todayTotal)} amount={data.todayTotal} unit="ج.م" />
+            <KpiCard kind="cost" label="مصروفات الشهر" value={moneyText(data.monthTotal)} amount={data.monthTotal} unit="ج.م" />
         </div>
     );
 }

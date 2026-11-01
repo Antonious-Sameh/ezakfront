@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { getShopSettingsCached } from '@/lib/shopSettingsCache';
 import { toISODate } from '@/lib/dates';
 import { EXPORT_SPECS } from './exportSpecs';
+import { count } from '@/components/analytics/format';
 
 /**
  * "تصدير" menu for a list section: Excel (.xlsx) or CSV, containing EVERY
@@ -61,9 +62,9 @@ export default function ExportButton({ shopId, entity, title, filters }) {
             });
             exporters.downloadFile(file.fileName, file.data, file.mime);
             if (res.truncated) {
-                toast.warning(`اتصدّر أول ${rows.length.toLocaleString('ar-EG')} صف بس من ${Number(res.total).toLocaleString('ar-EG')} — ضيّق الفترة بالتاريخ عشان تصدّر الباقي`);
+                toast.warning(`اتصدّر أول ${count(rows.length)} صف بس من ${count(res.total)} — ضيّق الفترة بالتاريخ عشان تصدّر الباقي`);
             } else {
-                toast.success(`تم تصدير ${rows.length.toLocaleString('ar-EG')} صف`);
+                toast.success(`تم تصدير ${count(rows.length)} صف`);
             }
         } catch (err) {
             toast.error(err?.message || 'حصلت مشكلة أثناء التصدير');

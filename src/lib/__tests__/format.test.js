@@ -7,6 +7,21 @@ describe('format helpers', () => {
     expect(formatNumber(1234.5, { locale: 'en-US' })).toBe('1,234.5');
   });
 
+  it('formatNumber keeps Arabic digits but groups thousands with a visible comma', () => {
+    // Intl's own ar-EG group mark (٬) is nearly invisible between Arabic digits.
+    expect(formatNumber(1234567.5, { locale: 'ar-EG', maximumFractionDigits: 2 })).toBe('١,٢٣٤,٥٦٧٫٥');
+    expect(formatNumber(999, { locale: 'ar-EG' })).toBe('٩٩٩');
+    expect(formatNumber(undefined, { locale: 'ar-EG' })).toBe('٠');
+    expect(formatNumber(-1234, { locale: 'ar-EG' })).toMatch(/^\u061c?-١,٢٣٤$/);
+  });
+
+  it('formatNumber changes only the separator, never the digits or the value', () => {
+    for (const v of [0, 7, 1000, 12345.678, 9876543210.5, -4321.25]) {
+      const plain = Number(v).toLocaleString('ar-EG', { maximumFractionDigits: 2 });
+      expect(formatNumber(v, { locale: 'ar-EG', maximumFractionDigits: 2 })).toBe(plain.replaceAll('٬', ','));
+    }
+  });
+
   it('formatDate returns an empty string for missing or invalid input', () => {
     expect(formatDate(null)).toBe('');
     expect(formatDate('not-a-date')).toBe('');

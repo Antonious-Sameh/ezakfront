@@ -80,13 +80,13 @@ describe('ShopSummaryPage — one page instead of two', () => {
         mockAll();
         renderPage();
         await screen.findByText('البضاعة (بالتكلفة)');
-        await waitFor(() => expect(tile('الكاش')).toHaveTextContent('٣٬٥٠٠'));
+        await waitFor(() => expect(tile('الكاش')).toHaveTextContent('٣,٥٠٠'));
         expect(tile('الكاش')).toHaveAttribute('href', '/shops/shop1/cashbox');
-        expect(tile('لينا عند العملاء')).toHaveTextContent('١٢٬٠٠٠');
+        expect(tile('لينا عند العملاء')).toHaveTextContent('١٢,٠٠٠');
         expect(tile('لينا عند العملاء')).toHaveAttribute('href', '/shops/shop1/customers');
-        expect(tile('البضاعة (بالتكلفة)')).toHaveTextContent('٤٥٬٠٠٠');
-        expect(tile('البضاعة (بالتكلفة)')).toHaveTextContent('بسعر البيع ٦٠٬٠٠٠');
-        expect(tile('علينا للموردين')).toHaveTextContent('٧٬٠٠٠');
+        expect(tile('البضاعة (بالتكلفة)')).toHaveTextContent('٤٥,٠٠٠');
+        expect(tile('البضاعة (بالتكلفة)')).toHaveTextContent('بسعر البيع ٦٠,٠٠٠');
+        expect(tile('علينا للموردين')).toHaveTextContent('٧,٠٠٠');
         expect(tile('علينا للموردين')).toHaveAttribute('href', '/shops/shop1/suppliers');
     });
 
@@ -133,7 +133,7 @@ describe('ShopSummaryPage — one page instead of two', () => {
 
         expect(screen.getByText('أكتر الأصناف مبيعاً')).toBeInTheDocument();
         expect(screen.getByText('شركة الصفا')).toBeInTheDocument();
-        expect(screen.getByText(/عليه ٢٬٠٠٠/)).toBeInTheDocument();
+        expect(screen.getByText(/عليه ٢,٠٠٠/)).toBeInTheDocument();
     });
 
     it('draws the trend, or explains when the shop has no daily report yet', async () => {
@@ -155,7 +155,7 @@ describe('ShopSummaryPage — one page instead of two', () => {
         api.getShopOverview.mockRejectedValue(new Error('x'));
         renderPage();
         expect(await screen.findByLabelText('صافي المبيعات: زيادة ٢٥٪')).toBeInTheDocument();
-        await waitFor(() => expect(tile('لينا عند العملاء')).toHaveTextContent('١٢٬٠٠٠'));
+        await waitFor(() => expect(tile('لينا عند العملاء')).toHaveTextContent('١٢,٠٠٠'));
         expect(tile('الكاش')).toHaveTextContent('—'); // unknown, never a fake 0
     });
 });

@@ -13,7 +13,7 @@ import StatusBanner from '@/components/home/StatusBanner';
 import PositionStrip from '@/components/home/PositionStrip';
 import ShopCards from '@/components/home/ShopCards';
 import { buildAttention } from '@/components/analytics/attention';
-import { money, pct, count } from '@/components/analytics/format';
+import { money, pct, count, scaleHint, figureSize } from '@/components/analytics/format';
 import { PERIODS, periodById, periodRange } from '@/components/analytics/periods';
 
 /**
@@ -41,7 +41,7 @@ function PeriodTabs({ value, onChange }) {
                         type="button"
                         onClick={() => onChange(p.id)}
                         aria-pressed={active}
-                        className={`min-h-9 flex-1 whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition-colors sm:flex-none sm:text-sm ${
+                        className={`min-h-11 flex-1 whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition-colors sm:flex-none sm:text-sm ${
                             active ? 'bg-white text-slate-900 shadow-sm' : 'text-white/75 hover:bg-white/10 hover:text-white'
                         }`}
                     >
@@ -53,9 +53,9 @@ function PeriodTabs({ value, onChange }) {
     );
 }
 
-function HeroStat({ label, value, unit, tone = 'text-white', badge }) {
+function HeroStat({ label, value, unit, tone = 'text-white', badge, className = '' }) {
     return (
-        <div className="min-w-0">
+        <div className={`min-w-0 ${className}`}>
             <p className="text-xs font-medium text-white/60">{label}</p>
             <p className={`mt-1 flex flex-wrap items-baseline gap-x-1.5 font-display text-xl font-bold tabular-nums sm:text-2xl ${tone}`}>
                 {value}
@@ -186,8 +186,8 @@ export default function OverviewPage() {
             {/* 4. Sales today / this month */}
             {!shops.loading && !shops.error ? (
                 <div className="grid grid-cols-2 gap-3">
-                    <KpiCard kind="sales" label="مبيعات النهارده" value={money(todayTotal)} unit="ج.م" sub="كل المحلات" />
-                    <KpiCard kind="sales" label="مبيعات الشهر ده" value={money(monthTotal)} unit="ج.م" sub="من أول الشهر" />
+                    <KpiCard kind="sales" label="مبيعات النهارده" value={money(todayTotal)} amount={todayTotal} unit="ج.م" sub="كل المحلات" />
+                    <KpiCard kind="sales" label="مبيعات الشهر ده" value={money(monthTotal)} amount={monthTotal} unit="ج.م" sub="من أول الشهر" />
                 </div>
             ) : null}
 
@@ -211,9 +211,10 @@ export default function OverviewPage() {
                 ) : (
                     <>
                         <div className="mt-6 flex flex-wrap items-end gap-x-4 gap-y-2">
-                            <p className="font-display text-4xl font-extrabold leading-none tabular-nums text-white sm:text-5xl" data-testid="hero-total">
+                            <p className={`font-display font-extrabold leading-none tabular-nums text-white ${figureSize(money(c.totalSales), { base: 'text-4xl', mid: 'text-3xl', small: 'text-2xl', sm: 'sm:text-5xl' })}`} data-testid="hero-total">
                                 {money(c.totalSales)}
                                 <span className="ms-2 text-lg font-semibold text-white/60">ج.م</span>
+                                {scaleHint(c.totalSales) ? <span className="mt-1 block text-sm font-semibold text-white/70">{scaleHint(c.totalSales)}</span> : null}
                             </p>
                             <div className="flex items-center gap-2 pb-1">
                                 <ChangeBadge value={c.change?.sales} size="lg" onDark label="المبيعات" />
@@ -224,8 +225,9 @@ export default function OverviewPage() {
                         </div>
                         {headline(c, period) ? <p className="mt-3 text-sm text-white/80">{headline(c, period)}</p> : null}
 
-                        <div className="mt-6 grid grid-cols-3 gap-x-4 gap-y-5 border-t border-white/10 pt-5">
+                        <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 border-t border-white/10 pt-5 sm:grid-cols-3">
                             <HeroStat
+                                className="col-span-2 sm:col-span-1"
                                 label="صافي الربح"
                                 value={money(c.totalProfit)}
                                 unit="ج.م"

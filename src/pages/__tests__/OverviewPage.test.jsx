@@ -52,7 +52,7 @@ describe('OverviewPage — the owner\'s first questions', () => {
         expect(first).toHaveTextContent('محل أ');
         await waitFor(() => expect(first).toHaveTextContent('١٢ ألف')); // owed by customers
         expect(first).toHaveTextContent('٤٥ ألف'); // stock at cost
-        expect(first).toHaveTextContent('٣٬٥٠٠'); // cash
+        expect(first).toHaveTextContent('٣,٥٠٠'); // cash
         expect(first).toHaveTextContent('٧٥٠'); // today's sales
         expect(second).toHaveTextContent('محل ب');
     });
@@ -60,11 +60,11 @@ describe('OverviewPage — the owner\'s first questions', () => {
     it('"معانا كام": what customers owe us, stock, cash, what we owe — and the estimated total', async () => {
         renderPage();
         const section = (await screen.findByRole('heading', { name: 'معانا كام' })).closest('section');
-        await waitFor(() => expect(within(section).getByText('لينا عند العملاء').parentElement.parentElement).toHaveTextContent('١٥٬٠٠٠'));
-        expect(within(section).getByText('البضاعة (بالتكلفة)').parentElement.parentElement).toHaveTextContent('٦٥٬٠٠٠');
-        expect(within(section).getByText('الكاش').parentElement.parentElement).toHaveTextContent('٤٬٠٠٠');
-        expect(within(section).getByText('علينا للموردين').parentElement.parentElement).toHaveTextContent('٨٬٠٠٠');
-        expect(within(section).getByTestId('position-net')).toHaveTextContent('٧٦٬٠٠٠');
+        await waitFor(() => expect(within(section).getByText('لينا عند العملاء').parentElement.parentElement).toHaveTextContent('١٥,٠٠٠'));
+        expect(within(section).getByText('البضاعة (بالتكلفة)').parentElement.parentElement).toHaveTextContent('٦٥,٠٠٠');
+        expect(within(section).getByText('الكاش').parentElement.parentElement).toHaveTextContent('٤,٠٠٠');
+        expect(within(section).getByText('علينا للموردين').parentElement.parentElement).toHaveTextContent('٨,٠٠٠');
+        expect(within(section).getByTestId('position-net')).toHaveTextContent('٧٦,٠٠٠');
     });
 
     it('says when the total is partial (a shop did not answer) instead of pretending it is complete', async () => {
@@ -79,8 +79,8 @@ describe('OverviewPage — the owner\'s first questions', () => {
     it('sales today / this month are summed from the shops', async () => {
         renderPage();
         const today = (await screen.findByText('مبيعات النهارده', { selector: 'p' })).parentElement;
-        expect(today).toHaveTextContent('١٬٠٠٠');
-        expect(screen.getByText('مبيعات الشهر ده').parentElement).toHaveTextContent('١٦٬٠٠٠');
+        expect(today).toHaveTextContent('١,٠٠٠');
+        expect(screen.getByText('مبيعات الشهر ده').parentElement).toHaveTextContent('١٦,٠٠٠');
     });
 
     it('one status line on top: says what needs attention (tap opens the list), or that all is fine', async () => {
@@ -104,7 +104,7 @@ describe('OverviewPage — the owner\'s first questions', () => {
 describe('OverviewPage — sales analysis', () => {
     it('total sales, change vs previous period, profit / margin / invoices', async () => {
         renderPage();
-        expect(await screen.findByTestId('hero-total')).toHaveTextContent('٤٬٠٠٠');
+        expect(await screen.findByTestId('hero-total')).toHaveTextContent('٤,٠٠٠');
         expect(screen.getByLabelText('المبيعات: زيادة ٢٥٪')).toBeInTheDocument();
         expect(screen.getByLabelText('الربح: نقص ١٠٪')).toBeInTheDocument();
         expect(screen.getByText('هامش الربح').nextSibling).toHaveTextContent('٢٢٫٥٪');

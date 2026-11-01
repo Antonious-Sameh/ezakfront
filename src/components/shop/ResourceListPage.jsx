@@ -11,6 +11,7 @@ import DetailModal from './DetailModal';
 import { SECTION_CONFIGS } from './sectionConfigs';
 import PrintInvoiceButton from '@/components/print/PrintInvoiceButton';
 import ExportButton from './ExportButton';
+import { count } from '@/components/analytics/format';
 
 /**
  * One reusable component for every shop list section (sales, purchases,
@@ -199,8 +200,16 @@ export default function ResourceListPage({ shopId, config, summaryNode }) {
                     aria-busy={list.fetching}
                     className={`flex flex-col gap-6 transition-opacity duration-150 ${list.fetching ? 'opacity-60' : 'opacity-100'}`}
                 >
+                    {/* How much there is in total, so a long list doesn't look like all there is */}
+                    {typeof pagination?.total === 'number' ? (
+                        <p className="-mb-3 text-xs font-medium text-muted-foreground" data-testid="list-total">
+                            {count(pagination.total)} {hasFilters ? 'نتيجة مطابقة' : 'نتيجة'}
+                            {(pagination.totalPages || 1) > 1 ? ` — صفحة ${count(pagination.page || 1)} من ${count(pagination.totalPages)}` : ''}
+                        </p>
+                    ) : null}
+
                     {/* Desktop table */}
-                    <div className="hidden overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs md:block">
+                    <div className="hidden overflow-x-auto rounded-xl border border-border/80 bg-card shadow-xs md:block">
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-border/80 bg-muted/40">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { count } from '@/components/analytics/format';
 
 /**
  * Pagination: numbered pages + prev/next on desktop, simplified
@@ -27,7 +28,7 @@ export default function Pagination({ page, totalPages, onPageChange }) {
 
                 <div className="flex items-center gap-1 rounded-xl bg-muted/40 px-3 py-1.5 border border-border/40">
                     <span className="text-xs font-bold tabular-nums text-foreground">
-                        صفحة {page} من {totalPages}
+                        صفحة {count(page)} من {count(totalPages)}
                     </span>
                 </div>
 
@@ -73,7 +74,7 @@ export default function Pagination({ page, totalPages, onPageChange }) {
                                         : 'border border-border/80 bg-card text-foreground hover:border-primary/40 hover:bg-muted/40 shadow-2xs'
                                 }`}
                             >
-                                {p}
+                                {count(p)}
                             </button>
                         ),
                     )}

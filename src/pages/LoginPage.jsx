@@ -91,7 +91,7 @@ export default function LoginPage() {
                                     value={password}
                                     onChange={(event) => setPassword(event.target.value)}
                                     placeholder="••••••••"
-                                    className="h-12 w-full rounded-xl border border-white/10 bg-slate-950/50 pl-4 pr-11 text-left text-sm text-white placeholder-slate-600 outline-none transition-all duration-200 focus:border-accent/60 focus:bg-slate-950/80 focus:ring-4 focus:ring-accent/10"
+                                    className="h-12 w-full rounded-xl border border-white/10 bg-slate-950/50 pl-4 pr-11 text-left text-base text-white sm:text-sm placeholder-slate-600 outline-none transition-all duration-200 focus:border-accent/60 focus:bg-slate-950/80 focus:ring-4 focus:ring-accent/10"
                                 />
                                 <button
                                     type="button"

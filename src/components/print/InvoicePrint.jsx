@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatNumber } from '@/lib/format';
+import { formatNumber, formatMoney } from '@/lib/format';
 import { AR_LOCALE, PAYMENT_LABELS } from '@/lib/constants';
 
 /**
@@ -20,7 +20,7 @@ import { AR_LOCALE, PAYMENT_LABELS } from '@/lib/constants';
  *  - printedAt: Date (defaults to now) — shown small at the bottom
  */
 
-const money = (v) => formatNumber(v, { locale: AR_LOCALE, maximumFractionDigits: 2 });
+const money = (v) => formatMoney(v, { locale: AR_LOCALE });
 const qty = (v) => formatNumber(v, { locale: AR_LOCALE });
 
 function formatDateTime(v) {
@@ -108,11 +108,11 @@ export default function InvoicePrint({ kind, invoice, settings, printedAt = new 
                     <>
                         <div className="inv-meta-row">
                             <span className="inv-muted">الإجمالي قبل الخصم</span>
-                            <span>{money(invoice.subtotal)}</span>
+                            <span>{money(invoice.subtotal)} ج.م</span>
                         </div>
                         <div className="inv-meta-row">
                             <span className="inv-muted">الخصم</span>
-                            <span>− {money(invoice.discount)}</span>
+                            <span>− {money(invoice.discount)} ج.م</span>
                         </div>
                     </>
                 ) : null}
@@ -124,11 +124,11 @@ export default function InvoicePrint({ kind, invoice, settings, printedAt = new 
                     <>
                         <div className="inv-meta-row">
                             <span className="inv-muted">المدفوع</span>
-                            <span className="inv-strong">{money(invoice.paid)}</span>
+                            <span className="inv-strong">{money(invoice.paid)} ج.م</span>
                         </div>
                         <div className="inv-meta-row">
                             <span className="inv-muted">المتبقي</span>
-                            <span className="inv-strong">{money(invoice.remaining)}</span>
+                            <span className="inv-strong">{money(invoice.remaining)} ج.م</span>
                         </div>
                     </>
                 ) : null}

@@ -260,7 +260,8 @@ export default function ShopLayout() {
                             <button
                                 type="button"
                                 onClick={() => setMoreOpen(false)}
-                                className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/80 text-muted-foreground active:scale-95"
+                                className="flex h-11 w-11 items-center justify-center rounded-full bg-muted/80 text-muted-foreground active:scale-95"
+                                aria-label="إغلاق"
                             >
                                 <X className="h-4 w-4" strokeWidth={2.5} />
                             </button>

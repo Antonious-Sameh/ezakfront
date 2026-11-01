@@ -4,7 +4,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import ChangeBadge from '@/components/analytics/ChangeBadge';
 import TrendChart, { buildPaths } from '@/components/analytics/TrendChart';
 import { buildAttention, DROP_ALERT_PCT } from '@/components/analytics/attention';
-import { compactMoney } from '@/components/analytics/format';
+import KpiCard from '@/components/analytics/KpiCard';
+import { compactMoney, scaleHint, qty, money } from '@/components/analytics/format';
 
 describe('ChangeBadge', () => {
     it('up is good (green), down is bad (red)', () => {
@@ -115,6 +116,40 @@ describe('compactMoney', () => {
         expect(compactMoney(12300)).toBe('١٢٫٣ ألف');
         expect(compactMoney(2500000)).toBe('٢٫٥ مليون');
         expect(compactMoney(950)).toBe('٩٥٠');
+    });
+
+    it('says billions in billions, and never overflows its own unit', () => {
+        expect(compactMoney(1500000000)).toBe('١٫٥ مليار');
+        expect(compactMoney(999960)).toBe('١ مليون');
+        expect(compactMoney(12345678)).toBe('١٢٫٣ مليون');
+    });
+});
+
+describe('big-number readability', () => {
+    it('groups money with a visible comma', () => {
+        expect(money(1234567.5)).toBe('١,٢٣٤,٥٦٧٫٥٠');
+        expect(money(12)).toBe('١٢');
+        expect(money(0.1 + 0.2)).toBe('٠٫٣٠');
+        expect(money(950)).toBe('٩٥٠');
+    });
+
+    it('scaleHint gives the size in words from one million up only', () => {
+        expect(scaleHint(999999)).toBe('');
+        expect(scaleHint(2500000)).toBe('≈ ٢٫٥ مليون');
+        expect(scaleHint(undefined)).toBe('');
+    });
+
+    it('qty keeps fractional quantities instead of rounding them', () => {
+        expect(qty(2.5)).toBe('٢٫٥');
+        expect(qty(3)).toBe('٣');
+    });
+
+    it('KpiCard adds the hint only for millions, and leaves the figure itself alone', () => {
+        const { rerender } = render(<KpiCard label="مبيعات" value={money(2500000)} amount={2500000} unit="ج.م" />);
+        expect(screen.getByTestId('scale-hint')).toHaveTextContent('≈ ٢٫٥ مليون');
+        expect(screen.getByText('مبيعات').nextSibling).toHaveTextContent('٢,٥٠٠,٠٠٠');
+        rerender(<KpiCard label="مبيعات" value={money(25000)} amount={25000} unit="ج.م" />);
+        expect(screen.queryByTestId('scale-hint')).toBeNull();
     });
 });
 

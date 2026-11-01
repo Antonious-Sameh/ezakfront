@@ -1,4 +1,5 @@
 import React from 'react';
+import { count } from './format';
 
 /**
  * A ranked list where each row has a bar proportional to `barValue`
@@ -14,7 +15,7 @@ export default function RankedBars({ rows, barClass = 'bg-accent', emptyText = '
                 <li key={r.key} className="flex flex-col gap-1.5">
                     <div className="flex items-baseline justify-between gap-3">
                         <span className="min-w-0 truncate text-sm font-semibold text-foreground">
-                            <span className="me-2 inline-block w-4 text-xs tabular-nums text-muted-foreground">{(i + 1).toLocaleString('ar-EG')}</span>
+                            <span className="me-2 inline-block w-4 text-xs tabular-nums text-muted-foreground">{count(i + 1)}</span>
                             {r.label}
                         </span>
                         <span className="shrink-0 text-sm tabular-nums text-foreground">{r.end}</span>

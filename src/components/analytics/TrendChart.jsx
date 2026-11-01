@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { compactMoney, dayLabel, money } from './format';
+import { dayLabel, money } from './format';
 
 /**
  * Day-by-day sales (filled area) and net profit (line), drawn as plain SVG —
@@ -90,12 +90,12 @@ export default function TrendChart({ days, onDark = false, height = 'h-40 sm:h-4
                 ) : null}
             </div>
 
-            <figcaption className={`mt-2 flex items-center justify-between text-[11px] ${ink}`}>
+            <figcaption className={`mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px] ${ink}`}>
                 <span>{dayLabel(days[0]?.date)}</span>
-                <span className="flex items-center gap-3" dir="rtl">
+                <span className="flex flex-wrap items-center gap-x-3 gap-y-1" dir="rtl">
                     <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm" style={{ background: salesColor }} />المبيعات</span>
                     <span className="flex items-center gap-1.5"><span className="h-0 w-3 border-t-2 border-dashed" style={{ borderColor: profitColor }} />الربح</span>
-                    <span className="hidden sm:inline">أعلى: {compactMoney(paths.max)}</span>
+                    <span className="tabular-nums">أعلى يوم: {money(paths.max)} ج.م</span>
                 </span>
                 <span>{dayLabel(days[days.length - 1]?.date)}</span>
             </figcaption>

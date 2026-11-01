@@ -37,6 +37,7 @@ export default function AppLayout() {
                     <button
                         type="button"
                         onClick={logout}
+                        aria-label="تسجيل الخروج"
                         className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 active:scale-[0.98]"
                     >
                         <LogOut className="h-4 w-4" strokeWidth={2} />

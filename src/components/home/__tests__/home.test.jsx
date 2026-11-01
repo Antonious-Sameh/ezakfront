@@ -40,13 +40,13 @@ describe('ShopCards', () => {
         { id: 's2', name: 'بقالة النور', status: 'offline', customersOwe: null, stockCost: null, cash: null, todaySales: 0 },
     ];
 
-    it('shows the full shop name (no "…" cut) and the four figures, compactly', () => {
+    it('shows the full shop name (no "…" cut) and the four figures in full (no hover needed on a phone)', () => {
         wrap(<ShopCards rows={rows} />);
         const card = screen.getByText('سوبر ماركت المدينة الجديدة').closest('a');
         expect(card).toHaveAttribute('href', '/shops/s1');
-        expect(card).toHaveTextContent('١٢٫٣ ألف');
-        expect(card).toHaveTextContent('٦٥٫٦ ألف');
-        expect(card).toHaveTextContent('٢٬٠٦٧');
+        expect(card).toHaveTextContent('١٢,٣٠٠');
+        expect(card).toHaveTextContent('٦٥,٦٠٠');
+        expect(card).toHaveTextContent('٢,٠٦٧');
         expect(card).toHaveTextContent('٢ ناقص');
     });
 
@@ -72,7 +72,7 @@ describe('PositionStrip', () => {
 
     it('the total estimate and how it is made up', () => {
         render(<PositionStrip position={position} />);
-        expect(screen.getByTestId('position-net')).toHaveTextContent('٧٬٦٠٠');
+        expect(screen.getByTestId('position-net')).toHaveTextContent('٧,٦٠٠');
         expect(screen.getByText(/كاش \+ بضاعة بالتكلفة \+ لينا عند العملاء − علينا للموردين/)).toBeInTheDocument();
     });
 

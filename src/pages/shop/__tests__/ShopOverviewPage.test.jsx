@@ -31,7 +31,7 @@ describe('ShopOverviewPage', () => {
         renderPage();
         expect((await screen.findByText('مبيعات النهارده')).parentElement).toHaveTextContent('٧٥٠');
         expect(screen.getByText('ربح النهارده').nextSibling).toHaveClass('text-emerald-700');
-        expect(screen.getByText('رصيد الكاشير').parentElement).toHaveTextContent('٣٬٥٠٠');
+        expect(screen.getByText('رصيد الكاشير').parentElement).toHaveTextContent('٣,٥٠٠');
     });
 
     it('a loss today shows in red', async () => {

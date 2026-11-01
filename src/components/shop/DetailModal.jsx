@@ -38,7 +38,7 @@ export default function DetailModal({ open, onClose, title, loading, error, acti
                 </div>
 
                 {/* Modal Header */}
-                <div className="flex items-center justify-between gap-3 border-b border-border/80 px-6 py-4">
+                <div className="flex items-center justify-between gap-3 border-b border-border/80 px-4 py-3 sm:px-6 sm:py-4">
                     <h2 className="font-display text-base font-bold text-foreground sm:text-lg dir-rtl">
                         {title}
                     </h2>
@@ -48,7 +48,7 @@ export default function DetailModal({ open, onClose, title, loading, error, acti
                         type="button"
                         onClick={onClose}
                         aria-label="إغلاق"
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95"
                     >
                         <X className="h-4 w-4" strokeWidth={2.5} />
                     </button>
@@ -56,7 +56,7 @@ export default function DetailModal({ open, onClose, title, loading, error, acti
                 </div>
 
                 {/* Modal Body */}
-                <div className="overflow-y-auto px-6 py-6 dir-rtl">
+                <div className="overflow-y-auto px-4 py-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-6 dir-rtl">
                     {loading ? (
                         <div className="space-y-6">
                             <div className="h-6 w-1/3 animate-pulse rounded-md bg-muted" />
