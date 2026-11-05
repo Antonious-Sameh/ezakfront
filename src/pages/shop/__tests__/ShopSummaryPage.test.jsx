@@ -80,32 +80,32 @@ describe('ShopSummaryPage — one page instead of two', () => {
         mockAll();
         renderPage();
         await screen.findByText('البضاعة (بالتكلفة)');
-        await waitFor(() => expect(tile('الكاش')).toHaveTextContent('٣,٥٠٠'));
+        await waitFor(() => expect(tile('الكاش')).toHaveTextContent('3,500'));
         expect(tile('الكاش')).toHaveAttribute('href', '/shops/shop1/cashbox');
-        expect(tile('لينا عند العملاء')).toHaveTextContent('١٢,٠٠٠');
+        expect(tile('لينا عند العملاء')).toHaveTextContent('12,000');
         expect(tile('لينا عند العملاء')).toHaveAttribute('href', '/shops/shop1/customers');
-        expect(tile('البضاعة (بالتكلفة)')).toHaveTextContent('٤٥,٠٠٠');
-        expect(tile('البضاعة (بالتكلفة)')).toHaveTextContent('بسعر البيع ٦٠,٠٠٠');
-        expect(tile('علينا للموردين')).toHaveTextContent('٧,٠٠٠');
+        expect(tile('البضاعة (بالتكلفة)')).toHaveTextContent('45,000');
+        expect(tile('البضاعة (بالتكلفة)')).toHaveTextContent('بسعر البيع 60,000');
+        expect(tile('علينا للموردين')).toHaveTextContent('7,000');
         expect(tile('علينا للموردين')).toHaveAttribute('href', '/shops/shop1/suppliers');
     });
 
     it('the period figures come with their change vs the previous period', async () => {
         mockAll();
         renderPage();
-        expect(await screen.findByLabelText('صافي المبيعات: زيادة ٢٥٪')).toBeInTheDocument();
-        expect(screen.getByLabelText('صافي الربح: نقص ٢٥٪')).toBeInTheDocument();
-        expect(screen.getByLabelText('المشتريات: زيادة ٤٠٪')).toHaveAttribute('data-good', 'neutral');
+        expect(await screen.findByLabelText('صافي المبيعات: زيادة 25%')).toBeInTheDocument();
+        expect(screen.getByLabelText('صافي الربح: نقص 25%')).toBeInTheDocument();
+        expect(screen.getByLabelText('المشتريات: زيادة 40%')).toHaveAttribute('data-good', 'neutral');
         for (const type of ['sales', 'profit', 'purchases']) expect(callsOf(type)[0][3].extras).toEqual({ compare: 'previous' });
     });
 
     it('switching the period re-asks ONLY for the period figures, not stock / debts / cash', async () => {
         mockAll();
         renderPage();
-        await screen.findByLabelText('صافي المبيعات: زيادة ٢٥٪');
+        await screen.findByLabelText('صافي المبيعات: زيادة 25%');
         const before = { inv: callsOf('inventory').length, cust: callsOf('customers').length, ov: api.getShopOverview.mock.calls.length, sales: callsOf('sales').length };
 
-        fireEvent.click(screen.getByRole('button', { name: 'آخر ٧ أيام' }));
+        fireEvent.click(screen.getByRole('button', { name: 'آخر 7 أيام' }));
         await waitFor(() => expect(callsOf('sales').length).toBe(before.sales + 1));
 
         expect(callsOf('inventory').length).toBe(before.inv);
@@ -116,8 +116,8 @@ describe('ShopSummaryPage — one page instead of two', () => {
     it('lists what is running out, saying how many are left', async () => {
         mockAll();
         renderPage();
-        const panel = (await screen.findByText(/أصناف ناقصة أو خلصت \(٨\)/)).closest('section');
-        expect(within(panel).getByText('فاضل ٢ قطعة')).toBeInTheDocument();
+        const panel = (await screen.findByText(/أصناف ناقصة أو خلصت \(8\)/)).closest('section');
+        expect(within(panel).getByText('فاضل 2 قطعة')).toBeInTheDocument();
         expect(within(panel).getByText('خلص')).toBeInTheDocument();
         expect(within(panel).getByRole('link', { name: /شوف كل الأصناف/ })).toHaveAttribute('href', '/shops/shop1/products');
     });
@@ -133,7 +133,7 @@ describe('ShopSummaryPage — one page instead of two', () => {
 
         expect(screen.getByText('أكتر الأصناف مبيعاً')).toBeInTheDocument();
         expect(screen.getByText('شركة الصفا')).toBeInTheDocument();
-        expect(screen.getByText(/عليه ٢,٠٠٠/)).toBeInTheDocument();
+        expect(screen.getByText(/عليه 2,000/)).toBeInTheDocument();
     });
 
     it('draws the trend, or explains when the shop has no daily report yet', async () => {
@@ -154,8 +154,8 @@ describe('ShopSummaryPage — one page instead of two', () => {
         mockAll();
         api.getShopOverview.mockRejectedValue(new Error('x'));
         renderPage();
-        expect(await screen.findByLabelText('صافي المبيعات: زيادة ٢٥٪')).toBeInTheDocument();
-        await waitFor(() => expect(tile('لينا عند العملاء')).toHaveTextContent('١٢,٠٠٠'));
+        expect(await screen.findByLabelText('صافي المبيعات: زيادة 25%')).toBeInTheDocument();
+        await waitFor(() => expect(tile('لينا عند العملاء')).toHaveTextContent('12,000'));
         expect(tile('الكاش')).toHaveTextContent('—'); // unknown, never a fake 0
     });
 });

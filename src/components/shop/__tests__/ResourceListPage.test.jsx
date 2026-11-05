@@ -138,7 +138,7 @@ describe('activity log', () => {
 
         expect((await screen.findAllByText('تم إنشاء فاتورة بيع رقم 77')).length).toBeGreaterThan(0);
         expect(screen.getAllByText('بيع').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('٥٠٠').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('500').length).toBeGreaterThan(0);
         expect(screen.queryByText('المستخدم')).not.toBeInTheDocument(); // always-empty column removed
     });
 

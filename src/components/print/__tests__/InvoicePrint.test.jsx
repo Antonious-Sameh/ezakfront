@@ -30,7 +30,7 @@ describe('InvoicePrint', () => {
         expect(within(rows[1]).getByText('فلتر زيت')).toBeInTheDocument();
         expect(within(rows[1]).getByText('F-1')).toBeInTheDocument();
 
-        expect(screen.getByTestId('print-grand-total')).toHaveTextContent('٥٠٠');
+        expect(screen.getByTestId('print-grand-total')).toHaveTextContent('500');
         expect(screen.getByTestId('print-grand-total')).toHaveTextContent('ج.م');
         expect(screen.getByText('الخصم')).toBeInTheDocument();
         expect(screen.getByText('المدفوع')).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe('InvoicePrint', () => {
 
     it('counts lines and pieces', () => {
         render(<InvoicePrint kind="sale" invoice={sale} settings={settings} />);
-        expect(screen.getByText('٢ / ٥')).toBeInTheDocument();
+        expect(screen.getByText('2 / 5')).toBeInTheDocument();
     });
 
     it('never prints the profit (internal to the owner)', () => {

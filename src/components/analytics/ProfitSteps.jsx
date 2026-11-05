@@ -57,7 +57,7 @@ export default function ProfitSteps({ profit }) {
                                         : s.kind === 'minus' ? 'text-sm text-amber-700 dark:text-amber-400' : 'text-sm font-bold text-foreground'
                                 }`}
                             >
-                                {isFinal ? money(s.value || 0) : money(Math.abs(s.value || 0))}<span className="ms-1 text-[10px] font-medium text-muted-foreground">ج.م</span>
+                                {isFinal ? money(s.value || 0) : money(Math.abs(s.value || 0))}<span className="ms-1 text-[11px] font-medium text-muted-foreground">ج.م</span>
                             </span>
                         </li>
                     );

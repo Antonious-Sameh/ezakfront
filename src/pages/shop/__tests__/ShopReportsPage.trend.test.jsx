@@ -101,10 +101,10 @@ describe('ShopReportsPage', () => {
     it('headline figures with their change vs the previous period', async () => {
         mockReports(dailyOk);
         renderPage();
-        expect(await screen.findByLabelText('صافي المبيعات: زيادة ٢٥٪')).toBeInTheDocument();
-        expect(screen.getByLabelText('صافي الربح: نقص ٢٥٪')).toBeInTheDocument();
+        expect(await screen.findByLabelText('صافي المبيعات: زيادة 25%')).toBeInTheDocument();
+        expect(screen.getByLabelText('صافي الربح: نقص 25%')).toBeInTheDocument();
         // purchases going up is neither good nor bad
-        expect(screen.getByLabelText('المشتريات: زيادة ٤٠٪')).toHaveAttribute('data-good', 'neutral');
+        expect(screen.getByLabelText('المشتريات: زيادة 40%')).toHaveAttribute('data-good', 'neutral');
     });
 
     it('shows the profit steps, payment split, best sellers, stock and debts', async () => {
@@ -114,7 +114,7 @@ describe('ShopReportsPage', () => {
         expect(screen.getByText('تكلفة البضاعة المباعة', { exact: false })).toBeInTheDocument();
         expect(screen.getByText('فلتر زيت')).toBeInTheDocument();
         expect(screen.getByText('ربح متوقع لو اتباع')).toBeInTheDocument();
-        expect(screen.getByText(/عليه ٢,٠٠٠/)).toBeInTheDocument();
+        expect(screen.getByText(/عليه 2,000/)).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'شوف الأصناف الناقصة' })).toHaveAttribute('href', '/shops/shop1/products');
     });
 

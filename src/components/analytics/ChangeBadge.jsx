@@ -43,7 +43,7 @@ export default function ChangeBadge({ value, inverse = false, neutral = false, s
             data-good={good === null ? (neutral && !flat ? 'neutral' : 'flat') : String(good)}
         >
             <Icon className={size === 'lg' ? 'h-4 w-4' : 'h-3.5 w-3.5'} strokeWidth={2.5} aria-hidden="true" />
-            {flat ? '٠٪' : pct(Math.abs(value))}
+            {flat ? '0%' : pct(Math.abs(value))}
         </span>
     );
 }

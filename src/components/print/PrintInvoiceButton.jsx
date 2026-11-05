@@ -38,7 +38,7 @@ export default function PrintInvoiceButton({ shopId, kind, invoice, className = 
                 type="button"
                 onClick={onClick}
                 disabled={busy}
-                className={`inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground transition-colors hover:bg-muted active:scale-95 disabled:opacity-60 sm:text-sm ${className}`}
+                className={`inline-flex min-h-11 items-center gap-1.5 sm:min-h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground transition-colors hover:bg-muted active:scale-95 disabled:opacity-60 sm:text-sm ${className}`}
             >
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} /> : <Printer className="h-4 w-4" strokeWidth={2} />}
                 <span>طباعة</span>

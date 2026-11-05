@@ -2,11 +2,11 @@ export const formatCurrency = (amount, { currency = 'USD', locale, ...options } 
 	Number(amount || 0).toLocaleString(locale, { style: 'currency', currency, ...options });
 
 /**
- * Arabic locales group thousands with U+066C (٬), a tiny mark that all but
- * disappears between Arabic-Indic digits, so ١٢٣٤٥٦٧ is read by counting
- * digits. For them the group separator is swapped for a plain comma, which
- * stays visible at every size: ١٬٢٣٤٬٥٦٧ → ١,٢٣٤,٥٦٧. Only the separator
- * changes — digits, decimals and the value itself are exactly Intl's.
+ * Safety net for Arabic locales: plain `ar-EG` groups thousands with U+066C
+ * (٬), a tiny mark that all but disappears between digits. The app's locale
+ * (AR_LOCALE, Latin digits) already uses a normal comma; anything else in
+ * the Arabic family is forced to one too. Only the separator can change —
+ * digits, decimals and the value itself are exactly Intl's.
  */
 const ARABIC_GROUP_SEPARATOR = ',';
 const isArabicLocale = (locale) => typeof locale === 'string' && /^ar(-|$)/i.test(locale);

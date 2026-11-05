@@ -5,13 +5,13 @@ import ChangeBadge from '@/components/analytics/ChangeBadge';
 import TrendChart, { buildPaths } from '@/components/analytics/TrendChart';
 import { buildAttention, DROP_ALERT_PCT } from '@/components/analytics/attention';
 import KpiCard from '@/components/analytics/KpiCard';
-import { compactMoney, scaleHint, qty, money } from '@/components/analytics/format';
+import { compactMoney, moneyParts, qty, money } from '@/components/analytics/format';
 
 describe('ChangeBadge', () => {
     it('up is good (green), down is bad (red)', () => {
         const { container, rerender } = render(<ChangeBadge value={12.5} />);
         expect(container.firstChild).toHaveAttribute('data-good', 'true');
-        expect(container.firstChild).toHaveTextContent('١٢٫٥٪');
+        expect(container.firstChild).toHaveTextContent('12.5%');
         rerender(<ChangeBadge value={-8} />);
         expect(container.firstChild).toHaveAttribute('data-good', 'false');
     });
@@ -30,7 +30,7 @@ describe('ChangeBadge', () => {
 
     it('is described in words for screen readers', () => {
         render(<ChangeBadge value={-20} label="المبيعات" />);
-        expect(screen.getByLabelText('المبيعات: نقص ٢٠٪')).toBeInTheDocument();
+        expect(screen.getByLabelText('المبيعات: نقص 20%')).toBeInTheDocument();
     });
 });
 
@@ -51,7 +51,7 @@ describe('TrendChart', () => {
 
     it('describes the series (best day) for screen readers', () => {
         render(<TrendChart days={days} />);
-        expect(screen.getByRole('img').getAttribute('aria-label')).toContain('٢ سبتمبر');
+        expect(screen.getByRole('img').getAttribute('aria-label')).toContain('2 سبتمبر');
     });
 
     it('shows the exact figures for the day under the finger / mouse', () => {
@@ -60,8 +60,8 @@ describe('TrendChart', () => {
         box.getBoundingClientRect = () => ({ left: 0, width: 300, top: 0, height: 100, right: 300, bottom: 100 });
 
         fireEvent.pointerMove(box, { clientX: 299 });
-        expect(screen.getByTestId('trend-tooltip')).toHaveTextContent('٣ سبتمبر');
-        expect(screen.getByTestId('trend-tooltip')).toHaveTextContent('٢٠٠');
+        expect(screen.getByTestId('trend-tooltip')).toHaveTextContent('3 سبتمبر');
+        expect(screen.getByTestId('trend-tooltip')).toHaveTextContent('200');
 
         fireEvent.pointerLeave(box);
         expect(screen.queryByTestId('trend-tooltip')).not.toBeInTheDocument();
@@ -95,9 +95,9 @@ describe('buildAttention', () => {
     it('each item says what happened in plain words and links to where to act', () => {
         const items = buildAttention({ shops, compare, position });
         expect(items.find((i) => i.kind === 'offline')).toMatchObject({ to: '/shops/b', text: expect.stringContaining('محل ب مش بيرد') });
-        expect(items.find((i) => i.kind === 'loss')).toMatchObject({ to: '/shops/c', text: expect.stringContaining('خسران ٥٠') });
+        expect(items.find((i) => i.kind === 'loss')).toMatchObject({ to: '/shops/c', text: expect.stringContaining('خسران 50') });
         // low stock ignores the offline shop, points at the worst online one
-        expect(items.find((i) => i.kind === 'stock')).toMatchObject({ to: '/shops/c/products', text: expect.stringContaining('٦ صنف') });
+        expect(items.find((i) => i.kind === 'stock')).toMatchObject({ to: '/shops/c/products', text: expect.stringContaining('6 صنف') });
         expect(items.find((i) => i.kind === 'debts')).toMatchObject({ to: '/shops/a/customers' });
     });
 
@@ -113,52 +113,54 @@ describe('buildAttention', () => {
 
 describe('compactMoney', () => {
     it('shortens large amounts', () => {
-        expect(compactMoney(12300)).toBe('١٢٫٣ ألف');
-        expect(compactMoney(2500000)).toBe('٢٫٥ مليون');
-        expect(compactMoney(950)).toBe('٩٥٠');
+        expect(compactMoney(12300)).toBe('12.3 ألف');
+        expect(compactMoney(2500000)).toBe('2.5 مليون');
+        expect(compactMoney(950)).toBe('950');
     });
 
     it('says billions in billions, and never overflows its own unit', () => {
-        expect(compactMoney(1500000000)).toBe('١٫٥ مليار');
-        expect(compactMoney(999960)).toBe('١ مليون');
-        expect(compactMoney(12345678)).toBe('١٢٫٣ مليون');
+        expect(compactMoney(1500000000)).toBe('1.5 مليار');
+        expect(compactMoney(999960)).toBe('1 مليون');
+        expect(compactMoney(12345678)).toBe('12.3 مليون');
     });
 });
 
 describe('big-number readability', () => {
-    it('groups money with a visible comma', () => {
-        expect(money(1234567.5)).toBe('١,٢٣٤,٥٦٧٫٥٠');
-        expect(money(12)).toBe('١٢');
-        expect(money(0.1 + 0.2)).toBe('٠٫٣٠');
-        expect(money(950)).toBe('٩٥٠');
+    it('money groups thousands with a comma; piastres are always two digits', () => {
+        expect(money(1234567.5)).toBe('1,234,567.50');
+        expect(money(12)).toBe('12');
+        expect(money(0.1 + 0.2)).toBe('0.30');
     });
 
-    it('scaleHint gives the size in words from one million up only', () => {
-        expect(scaleHint(999999)).toBe('');
-        expect(scaleHint(2500000)).toBe('≈ ٢٫٥ مليون');
-        expect(scaleHint(undefined)).toBe('');
+    it('moneyParts gives a headline AND the exact figure from one million up, nothing below', () => {
+        expect(moneyParts(4413929.83)).toEqual({ headline: '4.41 مليون', exact: '4,413,929.83' });
+        expect(moneyParts(15884329.5)).toEqual({ headline: '15.88 مليون', exact: '15,884,329.50' });
+        expect(moneyParts(1500000000)).toEqual({ headline: '1.5 مليار', exact: '1,500,000,000' });
+        expect(moneyParts(999999)).toBeNull();
+        expect(moneyParts(undefined)).toBeNull();
     });
 
     it('qty keeps fractional quantities instead of rounding them', () => {
-        expect(qty(2.5)).toBe('٢٫٥');
-        expect(qty(3)).toBe('٣');
+        expect(qty(2.5)).toBe('2.5');
+        expect(qty(3)).toBe('3');
     });
 
-    it('KpiCard adds the hint only for millions, and leaves the figure itself alone', () => {
-        const { rerender } = render(<KpiCard label="مبيعات" value={money(2500000)} amount={2500000} unit="ج.م" />);
-        expect(screen.getByTestId('scale-hint')).toHaveTextContent('≈ ٢٫٥ مليون');
-        expect(screen.getByText('مبيعات').nextSibling).toHaveTextContent('٢,٥٠٠,٠٠٠');
+    it('KpiCard shows "4.41 مليون" with the exact value right under it', () => {
+        const { rerender } = render(<KpiCard label="مبيعات" value={money(4413929.83)} amount={4413929.83} unit="ج.م" />);
+        expect(screen.getByText('مبيعات').nextSibling).toHaveTextContent('4.41 مليون');
+        expect(screen.getByTestId('exact-value')).toHaveTextContent('4,413,929.83 ج.م');
         rerender(<KpiCard label="مبيعات" value={money(25000)} amount={25000} unit="ج.م" />);
-        expect(screen.queryByTestId('scale-hint')).toBeNull();
+        expect(screen.queryByTestId('exact-value')).toBeNull();
+        expect(screen.getByText('مبيعات').nextSibling).toHaveTextContent('25,000');
     });
 });
 
 describe('pct keeps the sign (a negative margin must read negative)', async () => {
     const { pct } = await import('@/components/analytics/format');
     it('signed', () => {
-        expect(pct(-60.7)).toMatch(/^\u061c?-٦٠٫٧٪$/);
-        expect(pct(12.5)).toBe('١٢٫٥٪');
-        expect(pct(0)).toBe('٠٪');
+        expect(pct(-60.7)).toMatch(/^[\u061c\u200e]?-60.7%$/);
+        expect(pct(12.5)).toBe('12.5%');
+        expect(pct(0)).toBe('0%');
     });
 });
 
@@ -166,15 +168,15 @@ describe('ProfitSteps', async () => {
     const { default: ProfitSteps } = await import('@/components/analytics/ProfitSteps');
     it('a loss is shown with a minus and a negative margin', () => {
         render(<ProfitSteps profit={{ grossSales: 100, revenue: 100, cogs: 80, grossProfit: 20, expenses: 70, totalProfit: -50, margin: -50, returns: 0 }} />);
-        expect(screen.getByText(/^\u061c?-٥٠$/)).toBeInTheDocument();
-        expect(screen.getByText(/هامش صافي الربح \u061c?-٥٠٪/)).toBeInTheDocument();
+        expect(screen.getByText(/^[\u061c\u200e]?-50$/)).toBeInTheDocument();
+        expect(screen.getByText(/هامش صافي الربح [\u061c\u200e]?-50%/)).toBeInTheDocument();
     });
 });
 
 describe('KpiCard colours', async () => {
     const { default: KpiCard } = await import('@/components/analytics/KpiCard');
     it('a coloured value does not also carry text-foreground (which would override it)', () => {
-        render(<KpiCard label="ربح" value="١٠" valueClass="text-emerald-700" />);
+        render(<KpiCard label="ربح" value="10" valueClass="text-emerald-700" />);
         const value = screen.getByText('ربح').nextSibling;
         expect(value).toHaveClass('text-emerald-700');
         expect(value).not.toHaveClass('text-foreground');

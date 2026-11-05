@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, PackageX, WifiOff } from 'lucide-react';
 import ChangeBadge from './ChangeBadge';
+import MoneyFigure from './MoneyFigure';
 import { money, pct, count } from './format';
 import { ShopLayout, ShopSummaryPage } from '@/routes/lazyPages';
 import { preloadOnIntent } from '@/routes/intent';
@@ -58,24 +59,23 @@ export default function ShopRanking({ rows }) {
 
                             {/* Sales: amount, change, and share of the four shops as a bar */}
                             <div className="col-span-3 col-start-1 row-start-2 min-w-0 sm:col-span-1 sm:col-start-3 sm:row-start-1">
-                                <div className="flex items-baseline justify-between gap-2">
+                                <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
                                     <span className="font-display text-lg font-extrabold tabular-nums text-foreground">
-                                        {offline ? '—' : money(r.sales)}
-                                        {!offline ? <span className="ms-1 text-xs font-medium text-muted-foreground">ج.م</span> : null}
+                                        {offline ? '—' : <MoneyFigure value={r.sales} />}
                                     </span>
                                     {!offline ? <ChangeBadge value={r.change?.sales} label="المبيعات" /> : null}
                                 </div>
                                 <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
                                     <div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${barWidth}%` }} />
                                 </div>
-                                <p className="mt-1.5 flex items-center justify-between text-xs text-muted-foreground">
+                                <p className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-muted-foreground">
                                     <span>{offline ? 'مفيش بيانات' : `${pct(r.share)} من مبيعات المحلات`}</span>
                                     {!offline ? (
-                                        <span className="flex items-center gap-2">
-                                            <span className={r.profit < 0 ? 'font-semibold text-rose-600' : 'font-semibold text-emerald-700 dark:text-emerald-400'}>
+                                        <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                            <span className={`whitespace-nowrap ${r.profit < 0 ? 'font-semibold text-rose-600' : 'font-semibold text-emerald-700 dark:text-emerald-400'}`}>
                                                 ربح {money(r.profit)}
                                             </span>
-                                            <span>هامش {pct(r.margin)}</span>
+                                            <span className="whitespace-nowrap">هامش {pct(r.margin)}</span>
                                         </span>
                                     ) : null}
                                 </p>

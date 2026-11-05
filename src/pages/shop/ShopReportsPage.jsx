@@ -45,7 +45,7 @@ function TrendEmpty({ reason, periodId }) {
     const text = reason === 'outdated'
         ? ['التطور اليومي مش متاح للمحل ده لسه', 'محتاج تحديث باك المحل (تحديث التقرير اليومي).']
         : periodId === 'today'
-            ? ['التطور بيظهر على أكتر من يوم', 'اختار "آخر ٧ أيام" أو "آخر ٣٠ يوم".']
+            ? ['التطور بيظهر على أكتر من يوم', 'اختار "آخر 7 أيام" أو "آخر 30 يوم".']
             : ['مفيش حركة في الفترة دي', 'جرّب فترة أطول من فوق.'];
     return (
         <div className="flex min-h-40 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-muted/20 px-6 py-8 text-center">

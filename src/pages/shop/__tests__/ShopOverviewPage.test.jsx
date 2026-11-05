@@ -29,9 +29,9 @@ describe('ShopOverviewPage', () => {
     it("today's money first, with the shared colour language", async () => {
         api.getShopOverview.mockResolvedValue({ success: true, data: overview });
         renderPage();
-        expect((await screen.findByText('مبيعات النهارده')).parentElement).toHaveTextContent('٧٥٠');
+        expect((await screen.findByText('مبيعات النهارده')).parentElement).toHaveTextContent('750');
         expect(screen.getByText('ربح النهارده').nextSibling).toHaveClass('text-emerald-700');
-        expect(screen.getByText('رصيد الكاشير').parentElement).toHaveTextContent('٣,٥٠٠');
+        expect(screen.getByText('رصيد الكاشير').parentElement).toHaveTextContent('3,500');
     });
 
     it('a loss today shows in red', async () => {
@@ -46,7 +46,7 @@ describe('ShopOverviewPage', () => {
         const tile = (await screen.findByText('ناقص أو خلص')).closest('a');
         expect(tile).toHaveAttribute('href', '/shops/shop1/products');
         expect(tile.className).toContain('amber');
-        expect(screen.getByText('فاضل ٢ قطعة')).toBeInTheDocument();
+        expect(screen.getByText('فاضل 2 قطعة')).toBeInTheDocument();
         expect(screen.getByText('خلص')).toBeInTheDocument();
     });
 

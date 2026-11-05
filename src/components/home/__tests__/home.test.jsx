@@ -17,10 +17,10 @@ describe('StatusBanner', () => {
     it('counts the items in correct Arabic, red when something is urgent, and opens the list on tap', () => {
         const items = [
             { key: 'a', tone: 'danger', kind: 'offline', text: 'محل أ مش بيرد', to: '/shops/a' },
-            { key: 'b', tone: 'warning', kind: 'stock', text: '٣ صنف ناقص' },
+            { key: 'b', tone: 'warning', kind: 'stock', text: '3 صنف ناقص' },
         ];
         wrap(<StatusBanner items={items} />);
-        const button = screen.getByRole('button', { name: /٢ حاجتين محتاجة انتباهك/ });
+        const button = screen.getByRole('button', { name: /2 حاجتين محتاجة انتباهك/ });
         expect(button.className).toContain('rose');
         expect(screen.queryByText('محل أ مش بيرد')).not.toBeInTheDocument();
 
@@ -44,10 +44,10 @@ describe('ShopCards', () => {
         wrap(<ShopCards rows={rows} />);
         const card = screen.getByText('سوبر ماركت المدينة الجديدة').closest('a');
         expect(card).toHaveAttribute('href', '/shops/s1');
-        expect(card).toHaveTextContent('١٢,٣٠٠');
-        expect(card).toHaveTextContent('٦٥,٦٠٠');
-        expect(card).toHaveTextContent('٢,٠٦٧');
-        expect(card).toHaveTextContent('٢ ناقص');
+        expect(card).toHaveTextContent('12,300');
+        expect(card).toHaveTextContent('65,600');
+        expect(card).toHaveTextContent('2,067');
+        expect(card).toHaveTextContent('2 ناقص');
     });
 
     it('a negative cash balance is red', () => {
@@ -72,7 +72,7 @@ describe('PositionStrip', () => {
 
     it('the total estimate and how it is made up', () => {
         render(<PositionStrip position={position} />);
-        expect(screen.getByTestId('position-net')).toHaveTextContent('٧,٦٠٠');
+        expect(screen.getByTestId('position-net')).toHaveTextContent('7,600');
         expect(screen.getByText(/كاش \+ بضاعة بالتكلفة \+ لينا عند العملاء − علينا للموردين/)).toBeInTheDocument();
     });
 

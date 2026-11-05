@@ -22,7 +22,7 @@ function SummaryBand({ shopId, kind }) {
 
     if (loading || !data) {
         return (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[1, 2, 3, 4].map((i) => (
                     <div 
                         key={i} 
@@ -37,7 +37,7 @@ function SummaryBand({ shopId, kind }) {
     // money out / expenses = amber (a cost, not a loss), negative = red.
     if (kind === 'cashbox') {
         return (
-            <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <KpiCard
                     kind={data.balance < 0 ? 'loss' : 'neutral'}
                     label="الرصيد الحالي"
@@ -59,7 +59,7 @@ function SummaryBand({ shopId, kind }) {
     }
 
     return (
-        <div className="mb-6 grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
             <KpiCard kind="cost" label="مصروفات النهارده" value={moneyText(data.todayTotal)} amount={data.todayTotal} unit="ج.م" />
             <KpiCard kind="cost" label="مصروفات الشهر" value={moneyText(data.monthTotal)} amount={data.monthTotal} unit="ج.م" />
         </div>

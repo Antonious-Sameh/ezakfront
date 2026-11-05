@@ -1,6 +1,7 @@
 import React from 'react';
 import { HandCoins, Boxes, Wallet, Truck } from 'lucide-react';
-import { money, scaleHint, figureSize } from '@/components/analytics/format';
+import { money, moneyParts, figureSize } from '@/components/analytics/format';
+import MoneyFigure from '@/components/analytics/MoneyFigure';
 
 /**
  * "معانا كام" — the four figures the owner looks for first, summed across
@@ -23,13 +24,11 @@ function Tile({ icon: Icon, label, value, sub, tone }) {
                 <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${tones[tone]}`}>
                     <Icon className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                 </span>
-                <p className="truncate text-xs font-medium text-muted-foreground">{label}</p>
+                <p className="text-xs font-medium leading-tight text-muted-foreground">{label}</p>
             </div>
-            <p className={`mt-2 font-display font-extrabold tabular-nums text-foreground ${figureSize(value === null ? '' : money(value), { base: 'text-xl', sm: 'sm:text-2xl' })}`}>
-                {value === null ? '—' : <span className="whitespace-nowrap">{money(value)}</span>}
-                {value !== null ? <span className="ms-1 text-xs font-medium text-muted-foreground">ج.م</span> : null}
+            <p className={`mt-2 font-display font-extrabold tabular-nums text-foreground ${figureSize(value === null ? '' : (moneyParts(value)?.headline ?? money(value)), { base: 'text-xl', sm: 'sm:text-2xl' })}`}>
+                {value === null ? '—' : <MoneyFigure value={value} />}
             </p>
-            {value !== null && scaleHint(value) ? <p className="mt-0.5 text-[11px] font-semibold text-foreground/70">{scaleHint(value)}</p> : null}
             {sub ? <p className="mt-0.5 hidden text-[11px] text-muted-foreground sm:block">{sub}</p> : null}
         </div>
     );
@@ -56,9 +55,8 @@ export default function PositionStrip({ position }) {
                 <div>
                     <p className="text-xs text-white/70">الإجمالي التقديري{partial ? ' (ناقص محل مردّش)' : ''}</p>
                     <p className="font-display text-2xl font-extrabold tabular-nums" data-testid="position-net">
-                        {money(t.net)} <span className="text-sm font-semibold text-white/60">ج.م</span>
+                        <MoneyFigure value={t.net} unitClass="text-sm font-semibold text-white/60" exactClass="text-white/70" />
                     </p>
-                    {scaleHint(t.net) ? <p className="text-xs font-semibold text-white/70">{scaleHint(t.net)}</p> : null}
                 </div>
                 <p className="max-w-xs text-[11px] leading-relaxed text-white/60">
                     كاش + بضاعة بالتكلفة + لينا عند العملاء − علينا للموردين

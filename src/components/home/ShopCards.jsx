@@ -1,24 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, PackageX, WifiOff } from 'lucide-react';
-import { count, money } from '@/components/analytics/format';
+import { count } from '@/components/analytics/format';
+import MoneyFigure from '@/components/analytics/MoneyFigure';
 import { ShopLayout, ShopSummaryPage } from '@/routes/lazyPages';
 import { preloadOnIntent } from '@/routes/intent';
 
 const shopIntent = preloadOnIntent(() => Promise.all([ShopLayout.preload(), ShopSummaryPage.preload()]));
 
-/** The exact amount, never shortened (a phone has no hover): 55,296 → "٥٥,٢٩٦". Unknown → "—". */
-const short = (v) => (v === null || v === undefined ? '—' : money(v));
-
-function Row({ label, value, tone = '' }) {
+function Row({ label, amount, tone = '' }) {
+    const unknown = amount === null || amount === undefined;
     return (
-        // Label above the figure on a phone (two cards per row leave ~130px: a
-        // 7-digit amount next to its label did not fit); side by side from sm up.
-        <div className="flex flex-col gap-0.5 py-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2 sm:py-[3px]">
-            <dt className="text-xs text-muted-foreground">{label}</dt>
-            <dd className={`whitespace-nowrap font-display text-base font-bold tabular-nums sm:text-sm ${tone || 'text-foreground'}`}>
-                {value}
-                {value !== '—' ? <span className="ms-1 text-[10px] font-medium text-muted-foreground">ج.م</span> : null}
+        // Label above the figure on a phone (two cards per row leave ~130px);
+        // side by side from sm up. From a million up the figure is "2.81 مليون"
+        // with the exact amount under it, so it fits and is still all there.
+        <div className="flex flex-col gap-0.5 py-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-2 sm:py-1">
+            <dt className="text-xs leading-tight text-muted-foreground sm:pt-0.5">{label}</dt>
+            <dd className={`font-display text-base font-bold tabular-nums sm:text-end sm:text-sm ${tone || 'text-foreground'}`}>
+                {unknown ? '—' : <MoneyFigure value={amount} unitClass="text-[11px] font-medium text-muted-foreground" />}
             </dd>
         </div>
     );
@@ -66,10 +65,10 @@ export default function ShopCards({ rows }) {
                             ) : null}
 
                             <dl className="mt-1.5 divide-y divide-border/50">
-                                <Row label="عند العملاء" value={short(r.customersOwe)} tone={r.customersOwe > 0 ? 'text-amber-700 dark:text-amber-400' : ''} />
-                                <Row label="البضاعة" value={short(r.stockCost)} />
-                                <Row label="الكاش" value={short(r.cash)} tone={r.cash < 0 ? 'text-rose-600' : ''} />
-                                <Row label="مبيعات النهارده" value={offline ? '—' : short(r.todaySales)} tone={offline ? '' : 'text-accent'} />
+                                <Row label="عند العملاء" amount={r.customersOwe} tone={r.customersOwe > 0 ? 'text-amber-700 dark:text-amber-400' : ''} />
+                                <Row label="البضاعة" amount={r.stockCost} />
+                                <Row label="الكاش" amount={r.cash} tone={r.cash < 0 ? 'text-rose-600' : ''} />
+                                <Row label="مبيعات النهارده" amount={offline ? null : r.todaySales} tone={offline ? '' : 'text-accent'} />
                             </dl>
 
                             {Number(r.lowCount ?? r.lowStockCount) > 0 && !offline ? (

@@ -129,7 +129,7 @@ export default function ResourceListPage({ shopId, config, summaryNode }) {
             <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setLinkedRef(action.ref); }}
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted active:scale-[0.98]"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted active:scale-[0.98]"
             >
                 <FileText className="h-3.5 w-3.5" strokeWidth={2} />
                 {action.label}
@@ -268,8 +268,10 @@ export default function ResourceListPage({ shopId, config, summaryNode }) {
                                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
                                         {mobileCols
                                             .filter((c) => c.key !== primaryKey(columns) && c.key !== trailingKey(columns))
+                                            .filter((c) => !(c.hideEmptyOnMobile && isEmptyValue(row[c.key])))
                                             .map((col) => (
                                                 <span key={col.key} className="inline-flex items-center gap-1">
+                                                    {col.mobileLabel ? <span className="font-medium">{col.mobileLabel}</span> : null}
                                                     {col.ltr ? <span dir="ltr">{renderCol(col, row)}</span> : renderCol(col, row)}
                                                 </span>
                                             ))}
@@ -341,6 +343,7 @@ export default function ResourceListPage({ shopId, config, summaryNode }) {
     );
 }
 
+const isEmptyValue = (raw) => raw === undefined || raw === null || raw === '' || Number(raw) === 0;
 function renderCol(col, row) {
     return col.render ? col.render(row[col.key], row) : (row[col.key] ?? '—');
 }
@@ -358,6 +361,7 @@ function primaryValue(row, columns) {
 function trailingKey(columns) {
     const mobile = columns.filter((c) => c.mobile);
     for (let i = mobile.length - 1; i >= 0; i -= 1) {
+        if (mobile[i].notTrailing) continue;
         if (mobile[i].align === 'end' || mobile[i].numeric) return mobile[i].key;
     }
     return null;
@@ -367,7 +371,7 @@ function trailingValue(row, columns) {
     if (!key) return null;
     const col = columns.find((c) => c.key === key);
     const raw = row[key];
-    if (col.hideEmptyOnMobile && (raw === undefined || raw === null || raw === '' || Number(raw) === 0)) return null;
+    if (col.hideEmptyOnMobile && isEmptyValue(raw)) return null;
     const val = renderCol(col, row);
     return (
         <span className="font-display text-sm font-bold tabular-nums text-foreground">

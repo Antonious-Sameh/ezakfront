@@ -3,8 +3,8 @@ import { subDays, toISODate } from '@/lib/dates';
 /** Rolling periods shared by the home page and the shop reports page. */
 export const PERIODS = [
     { id: 'today', label: 'اليوم', days: 1, previous: 'امبارح' },
-    { id: 'week', label: 'آخر ٧ أيام', days: 7, previous: 'الـ٧ أيام اللي قبلها' },
-    { id: 'month', label: 'آخر ٣٠ يوم', days: 30, previous: 'الـ٣٠ يوم اللي قبلهم' },
+    { id: 'week', label: 'آخر 7 أيام', days: 7, previous: 'الـ7 أيام اللي قبلها' },
+    { id: 'month', label: 'آخر 30 يوم', days: 30, previous: 'الـ30 يوم اللي قبلهم' },
 ];
 
 export function periodById(id) {

@@ -13,14 +13,15 @@ import SplitBar from '@/components/analytics/SplitBar';
 import RankedBars from '@/components/analytics/RankedBars';
 import Disclosure from '@/components/analytics/Disclosure';
 import { PERIODS, periodById, periodRange } from '@/components/analytics/periods';
-import { money, pct, count, qty, scaleHint, figureSize } from '@/components/analytics/format';
+import { money, pct, count, qty, moneyParts, figureSize } from '@/components/analytics/format';
+import MoneyFigure from '@/components/analytics/MoneyFigure';
 
 /**
  * One page per shop: "how is this shop doing?" — what used to be two pages
  * (نظرة عامة + التقارير) that answered the same question.
  *
  *   1. دلوقتي: cash, what customers owe, stock value, what we owe suppliers
- *   2. the period (اليوم / ٧ أيام / ٣٠ يوم): sales, profit, purchases, avg
+ *   2. the period (اليوم / 7 أيام / 30 يوم): sales, profit, purchases, avg
  *      invoice — each against the previous period — and the day-by-day trend
  *   3. profit step by step, cash vs credit
  *   4. what is running out
@@ -53,7 +54,7 @@ function TrendEmpty({ reason, periodId }) {
     const text = reason === 'outdated'
         ? ['التطور اليومي مش متاح للمحل ده لسه', 'محتاج تحديث باك المحل (تحديث التقرير اليومي).']
         : periodId === 'today'
-            ? ['التطور بيظهر على أكتر من يوم', 'اختار "آخر ٧ أيام" أو "آخر ٣٠ يوم".']
+            ? ['التطور بيظهر على أكتر من يوم', 'اختار "آخر 7 أيام" أو "آخر 30 يوم".']
             : ['مفيش حركة في الفترة دي', 'جرّب فترة أطول من فوق.'];
     return (
         <div className="flex min-h-40 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-muted/20 px-6 py-8 text-center">
@@ -63,12 +64,14 @@ function TrendEmpty({ reason, periodId }) {
     );
 }
 
-function Stat({ label, value, unit, tone = 'text-foreground' }) {
+function Stat({ label, value, unit, tone = 'text-foreground', amount }) {
     return (
         <div className="min-w-0">
             <dt className="text-xs text-muted-foreground">{label}</dt>
             <dd className={`mt-0.5 font-display text-lg font-bold tabular-nums ${tone}`}>
-                {value}{unit ? <span className="ms-1 text-xs font-medium text-muted-foreground">{unit}</span> : null}
+                {amount !== undefined ? <MoneyFigure value={amount} unit={unit} /> : (
+                    <>{value}{unit ? <span className="ms-1 text-xs font-medium text-muted-foreground">{unit}</span> : null}</>
+                )}
             </dd>
         </div>
     );
@@ -123,13 +126,11 @@ function NowTile({ icon: Icon, label, value, tone, to, hint }) {
                 <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${tones[tone]}`}>
                     <Icon className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                 </span>
-                <p className="truncate text-xs font-medium text-muted-foreground">{label}</p>
+                <p className="text-xs font-medium leading-tight text-muted-foreground">{label}</p>
             </div>
-            <p className={`mt-2 font-display font-extrabold tabular-nums ${figureSize(value === null || value === undefined ? '' : money(value), { base: 'text-xl', sm: 'sm:text-2xl' })} ${value !== null && value < 0 ? 'text-rose-600' : 'text-foreground'}`}>
-                {value === null || value === undefined ? '—' : <span className="whitespace-nowrap">{money(value)}</span>}
-                {value !== null && value !== undefined ? <span className="ms-1 text-xs font-medium text-muted-foreground">ج.م</span> : null}
+            <p className={`mt-2 font-display font-extrabold tabular-nums ${figureSize(value === null || value === undefined ? '' : (moneyParts(value)?.headline ?? money(value)), { base: 'text-xl', sm: 'sm:text-2xl' })} ${value !== null && value < 0 ? 'text-rose-600' : 'text-foreground'}`}>
+                {value === null || value === undefined ? '—' : <MoneyFigure value={value} />}
             </p>
-            {value !== null && value !== undefined && scaleHint(value) ? <p className="mt-0.5 text-[11px] font-semibold text-foreground/70">{scaleHint(value)}</p> : null}
             {hint ? <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p> : null}
         </>
     );
@@ -170,7 +171,7 @@ function LowStockPanel({ items, total, shopId }) {
                     );
                 })}
             </ul>
-            <Link to={`/shops/${shopId}/products`} className="inline-flex items-center gap-1 self-start text-sm font-semibold text-primary hover:text-primary/80">
+            <Link to={`/shops/${shopId}/products`} className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-semibold text-primary hover:text-primary/80">
                 شوف كل الأصناف <ArrowUpLeft className="h-4 w-4" aria-hidden="true" />
             </Link>
         </Panel>
@@ -293,8 +294,8 @@ export default function ShopSummaryPage() {
                                     ]}
                                 />
                                 <dl className="grid grid-cols-2 gap-3 border-t border-border pt-4">
-                                    <Stat label="اتحصّل من فواتير الفترة" value={money(per.data.sales.collected)} unit="ج.م" tone="text-emerald-700 dark:text-emerald-400" />
-                                    <Stat label="لسه متحصّلش منها" value={money(per.data.sales.creditOutstanding)} unit="ج.م"
+                                    <Stat label="اتحصّل من فواتير الفترة" value={money(per.data.sales.collected)} amount={per.data.sales.collected} unit="ج.م" tone="text-emerald-700 dark:text-emerald-400" />
+                                    <Stat label="لسه متحصّلش منها" value={money(per.data.sales.creditOutstanding)} amount={per.data.sales.creditOutstanding} unit="ج.م"
                                         tone={per.data.sales.creditOutstanding > 0 ? 'text-rose-600' : 'text-foreground'} />
                                 </dl>
                             </Panel>
@@ -326,9 +327,9 @@ export default function ShopSummaryPage() {
                         </Panel>
                         <Panel title="المخزون" subtitle="الموجود حالياً (مش مرتبط بالفترة)">
                             <dl className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3">
-                                <Stat label="قيمته بالتكلفة" value={money(now.data.inventory.totalStockValue)} unit="ج.م" />
-                                <Stat label="قيمته بسعر البيع" value={money(now.data.inventory.saleValue)} unit="ج.م" />
-                                <Stat label="ربح متوقع لو اتباع" value={money(now.data.inventory.expectedProfit)} unit="ج.م" tone="text-emerald-700 dark:text-emerald-400" />
+                                <Stat label="قيمته بالتكلفة" value={money(now.data.inventory.totalStockValue)} amount={now.data.inventory.totalStockValue} unit="ج.م" />
+                                <Stat label="قيمته بسعر البيع" value={money(now.data.inventory.saleValue)} amount={now.data.inventory.saleValue} unit="ج.م" />
+                                <Stat label="ربح متوقع لو اتباع" value={money(now.data.inventory.expectedProfit)} amount={now.data.inventory.expectedProfit} unit="ج.م" tone="text-emerald-700 dark:text-emerald-400" />
                                 <Stat label="عدد الأصناف" value={count(now.data.inventory.totalProducts)} />
                                 <Stat label="ناقص" value={count(now.data.inventory.lowCount)} tone={now.data.inventory.lowCount ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'} />
                                 <Stat label="خلص" value={count(now.data.inventory.outCount)} tone={now.data.inventory.outCount ? 'text-rose-600' : 'text-foreground'} />
@@ -336,7 +337,7 @@ export default function ShopSummaryPage() {
                         </Panel>
                         <Panel title="العملاء" subtitle="من بداية التشغيل (مش مرتبط بالفترة)">
                             <dl className="grid grid-cols-2 gap-3">
-                                <Stat label="لسه على العملاء" value={money(now.data.customers.totalOutstanding)} unit="ج.م" tone={now.data.customers.totalOutstanding > 0 ? 'text-rose-600' : 'text-foreground'} />
+                                <Stat label="لسه على العملاء" value={money(now.data.customers.totalOutstanding)} amount={now.data.customers.totalOutstanding} unit="ج.م" tone={now.data.customers.totalOutstanding > 0 ? 'text-rose-600' : 'text-foreground'} />
                                 <Stat label="عملاء عليهم فلوس" value={`${count(now.data.customers.withBalanceCount)} من ${count(now.data.customers.count)}`} />
                             </dl>
                             <RankedBars
@@ -349,7 +350,7 @@ export default function ShopSummaryPage() {
                         </Panel>
                         <Panel title="الموردين" subtitle="من بداية التشغيل (مش مرتبط بالفترة)">
                             <dl className="grid grid-cols-2 gap-3">
-                                <Stat label="لسه للموردين" value={money(now.data.suppliers.totalOutstanding)} unit="ج.م" tone={now.data.suppliers.totalOutstanding > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'} />
+                                <Stat label="لسه للموردين" value={money(now.data.suppliers.totalOutstanding)} amount={now.data.suppliers.totalOutstanding} unit="ج.م" tone={now.data.suppliers.totalOutstanding > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'} />
                                 <Stat label="موردين ليهم فلوس" value={`${count(now.data.suppliers.withBalanceCount)} من ${count(now.data.suppliers.count)}`} />
                             </dl>
                             <RankedBars

@@ -13,7 +13,8 @@ import StatusBanner from '@/components/home/StatusBanner';
 import PositionStrip from '@/components/home/PositionStrip';
 import ShopCards from '@/components/home/ShopCards';
 import { buildAttention } from '@/components/analytics/attention';
-import { money, pct, count, scaleHint, figureSize } from '@/components/analytics/format';
+import { money, pct, count, moneyParts, figureSize } from '@/components/analytics/format';
+import MoneyFigure from '@/components/analytics/MoneyFigure';
 import { PERIODS, periodById, periodRange } from '@/components/analytics/periods';
 
 /**
@@ -53,13 +54,19 @@ function PeriodTabs({ value, onChange }) {
     );
 }
 
-function HeroStat({ label, value, unit, tone = 'text-white', badge, className = '' }) {
+function HeroStat({ label, value, unit, tone = 'text-white', badge, className = '', amount }) {
     return (
         <div className={`min-w-0 ${className}`}>
             <p className="text-xs font-medium text-white/60">{label}</p>
-            <p className={`mt-1 flex flex-wrap items-baseline gap-x-1.5 font-display text-xl font-bold tabular-nums sm:text-2xl ${tone}`}>
-                {value}
-                {unit ? <span className="text-xs font-medium text-white/50">{unit}</span> : null}
+            <p className={`mt-1 font-display text-xl font-bold tabular-nums sm:text-2xl ${tone}`}>
+                {amount !== undefined ? (
+                    <MoneyFigure value={amount} unit={unit} unitClass="text-xs font-medium text-white/50" exactClass="text-white/60" />
+                ) : (
+                    <span className="flex flex-wrap items-baseline gap-x-1.5">
+                        {value}
+                        {unit ? <span className="text-xs font-medium text-white/50">{unit}</span> : null}
+                    </span>
+                )}
             </p>
             {badge ? <div className="mt-1">{badge}</div> : null}
         </div>
@@ -150,7 +157,7 @@ export default function OverviewPage() {
     const monthTotal = (shops.data || []).reduce((a, s) => a + (s.monthSales || 0), 0);
 
     return (
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-5 sm:gap-8 sm:px-6 sm:py-6 lg:px-8 dir-rtl">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 py-5 sm:gap-8 sm:py-6 dir-rtl">
             <Helmet>
                 <title>الرئيسية — لوحة تحكم المحلات</title>
                 <meta name="description" content="المحلات الأربعة: لينا كام عند العملاء، والبضاعة بكام، والكاش، ومبيعات النهارده، وتحليل المبيعات." />
@@ -211,10 +218,8 @@ export default function OverviewPage() {
                 ) : (
                     <>
                         <div className="mt-6 flex flex-wrap items-end gap-x-4 gap-y-2">
-                            <p className={`font-display font-extrabold leading-none tabular-nums text-white ${figureSize(money(c.totalSales), { base: 'text-4xl', mid: 'text-3xl', small: 'text-2xl', sm: 'sm:text-5xl' })}`} data-testid="hero-total">
-                                {money(c.totalSales)}
-                                <span className="ms-2 text-lg font-semibold text-white/60">ج.م</span>
-                                {scaleHint(c.totalSales) ? <span className="mt-1 block text-sm font-semibold text-white/70">{scaleHint(c.totalSales)}</span> : null}
+                            <p className={`font-display font-extrabold leading-none tabular-nums text-white ${figureSize(moneyParts(c.totalSales)?.headline ?? money(c.totalSales), { base: 'text-4xl', mid: 'text-3xl', small: 'text-2xl', sm: 'sm:text-5xl' })}`} data-testid="hero-total">
+                                <MoneyFigure value={c.totalSales} unitClass="text-lg font-semibold text-white/60" exactClass="mt-1.5 !text-sm text-white/70" />
                             </p>
                             <div className="flex items-center gap-2 pb-1">
                                 <ChangeBadge value={c.change?.sales} size="lg" onDark label="المبيعات" />
@@ -230,6 +235,7 @@ export default function OverviewPage() {
                                 className="col-span-2 sm:col-span-1"
                                 label="صافي الربح"
                                 value={money(c.totalProfit)}
+                                amount={c.totalProfit}
                                 unit="ج.م"
                                 tone={c.totalProfit < 0 ? 'text-rose-300' : 'text-emerald-300'}
                                 badge={<ChangeBadge value={c.change?.profit} onDark label="الربح" />}
@@ -248,7 +254,7 @@ export default function OverviewPage() {
                                 ) : null}
                             </div>
                         ) : periodId === 'today' ? (
-                            <p className="mt-6 text-xs text-white/50">اختار "آخر ٧ أيام" أو "آخر ٣٠ يوم" عشان تشوف التطور يوم بيوم.</p>
+                            <p className="mt-6 text-xs text-white/50">اختار "آخر 7 أيام" أو "آخر 30 يوم" عشان تشوف التطور يوم بيوم.</p>
                         ) : c?.daily && !c.daily.available ? (
                             <p className="mt-6 text-xs text-white/50">التطور اليومي هيظهر لما المحلات تتحدث بالتقرير اليومي.</p>
                         ) : null}

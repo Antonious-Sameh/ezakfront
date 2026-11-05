@@ -50,21 +50,21 @@ describe('OverviewPage — the owner\'s first questions', () => {
 
         expect(within(first).getByRole('link')).toHaveAttribute('href', '/shops/shop1');
         expect(first).toHaveTextContent('محل أ');
-        await waitFor(() => expect(first).toHaveTextContent('١٢ ألف')); // owed by customers
-        expect(first).toHaveTextContent('٤٥ ألف'); // stock at cost
-        expect(first).toHaveTextContent('٣,٥٠٠'); // cash
-        expect(first).toHaveTextContent('٧٥٠'); // today's sales
+        await waitFor(() => expect(first).toHaveTextContent('12,000')); // owed by customers (full amount, not shortened)
+        expect(first).toHaveTextContent('45,000'); // stock at cost
+        expect(first).toHaveTextContent('3,500'); // cash
+        expect(first).toHaveTextContent('750'); // today's sales
         expect(second).toHaveTextContent('محل ب');
     });
 
     it('"معانا كام": what customers owe us, stock, cash, what we owe — and the estimated total', async () => {
         renderPage();
         const section = (await screen.findByRole('heading', { name: 'معانا كام' })).closest('section');
-        await waitFor(() => expect(within(section).getByText('لينا عند العملاء').parentElement.parentElement).toHaveTextContent('١٥,٠٠٠'));
-        expect(within(section).getByText('البضاعة (بالتكلفة)').parentElement.parentElement).toHaveTextContent('٦٥,٠٠٠');
-        expect(within(section).getByText('الكاش').parentElement.parentElement).toHaveTextContent('٤,٠٠٠');
-        expect(within(section).getByText('علينا للموردين').parentElement.parentElement).toHaveTextContent('٨,٠٠٠');
-        expect(within(section).getByTestId('position-net')).toHaveTextContent('٧٦,٠٠٠');
+        await waitFor(() => expect(within(section).getByText('لينا عند العملاء').parentElement.parentElement).toHaveTextContent('15,000'));
+        expect(within(section).getByText('البضاعة (بالتكلفة)').parentElement.parentElement).toHaveTextContent('65,000');
+        expect(within(section).getByText('الكاش').parentElement.parentElement).toHaveTextContent('4,000');
+        expect(within(section).getByText('علينا للموردين').parentElement.parentElement).toHaveTextContent('8,000');
+        expect(within(section).getByTestId('position-net')).toHaveTextContent('76,000');
     });
 
     it('says when the total is partial (a shop did not answer) instead of pretending it is complete', async () => {
@@ -79,8 +79,8 @@ describe('OverviewPage — the owner\'s first questions', () => {
     it('sales today / this month are summed from the shops', async () => {
         renderPage();
         const today = (await screen.findByText('مبيعات النهارده', { selector: 'p' })).parentElement;
-        expect(today).toHaveTextContent('١,٠٠٠');
-        expect(screen.getByText('مبيعات الشهر ده').parentElement).toHaveTextContent('١٦,٠٠٠');
+        expect(today).toHaveTextContent('1,000');
+        expect(screen.getByText('مبيعات الشهر ده').parentElement).toHaveTextContent('16,000');
     });
 
     it('one status line on top: says what needs attention (tap opens the list), or that all is fine', async () => {
@@ -104,10 +104,10 @@ describe('OverviewPage — the owner\'s first questions', () => {
 describe('OverviewPage — sales analysis', () => {
     it('total sales, change vs previous period, profit / margin / invoices', async () => {
         renderPage();
-        expect(await screen.findByTestId('hero-total')).toHaveTextContent('٤,٠٠٠');
-        expect(screen.getByLabelText('المبيعات: زيادة ٢٥٪')).toBeInTheDocument();
-        expect(screen.getByLabelText('الربح: نقص ١٠٪')).toBeInTheDocument();
-        expect(screen.getByText('هامش الربح').nextSibling).toHaveTextContent('٢٢٫٥٪');
+        expect(await screen.findByTestId('hero-total')).toHaveTextContent('4,000');
+        expect(screen.getByLabelText('المبيعات: زيادة 25%')).toBeInTheDocument();
+        expect(screen.getByLabelText('الربح: نقص 10%')).toBeInTheDocument();
+        expect(screen.getByText('هامش الربح').nextSibling).toHaveTextContent('22.5%');
     });
 
     it('defaults to the last 30 days and asks the backend for exactly that range', async () => {
@@ -120,7 +120,7 @@ describe('OverviewPage — sales analysis', () => {
     it('switching period asks for the new range', async () => {
         renderPage();
         await screen.findByTestId('hero-total');
-        fireEvent.click(screen.getByRole('button', { name: 'آخر ٧ أيام' }));
+        fireEvent.click(screen.getByRole('button', { name: 'آخر 7 أيام' }));
         await waitFor(() => expect(api.getCompareReport).toHaveBeenCalledTimes(2));
         const [, from, to] = api.getCompareReport.mock.calls[1];
         expect((new Date(to) - new Date(from)) / 86400000).toBe(6);
@@ -144,7 +144,7 @@ describe('OverviewPage — sales analysis', () => {
 
 describe('helpers', () => {
     it('headline names the leading shop and the direction of sales', () => {
-        expect(headline(compare, PERIODS[2])).toBe('محل أ في المقدمة بـ ٧٥٪ من المبيعات، والمبيعات زادت ٢٥٪ عن الـ٣٠ يوم اللي قبلهم');
+        expect(headline(compare, PERIODS[2])).toBe('محل أ في المقدمة بـ 75% من المبيعات، والمبيعات زادت 25% عن الـ30 يوم اللي قبلهم');
     });
 
     it('mergeShopRows sorts by rank and puts unranked (offline) shops last', () => {

@@ -23,7 +23,7 @@ export function Money({ value, className = '' }) {
     return (
         <span className={`whitespace-nowrap tabular-nums ${className}`}>
             {moneyText(value)}
-            <span className="ms-1 text-[0.7em] font-normal text-muted-foreground">ج.م</span>
+            <span className="ms-1 text-[11px] font-normal text-muted-foreground">ج.م</span>
         </span>
     );
 }
@@ -162,10 +162,15 @@ function DetailGrid({ fields }) {
 
 /** Items table for invoices (sales / purchases). */
 function ItemsTable({ items, moneyKey }) {
+    // Phones (< sm): each line becomes a small card — the product name on its own
+    // full-width row, then quantity / price / total side by side with their
+    // labels (a 4-column table left the name ~70px wide and wrapping 4 lines).
+    // From sm up it is the ordinary table. Same cells either way.
+    const label = 'before:mb-0.5 before:block before:text-[11px] before:font-medium before:text-muted-foreground before:content-[attr(data-label)] sm:before:hidden';
     return (
         <div className="overflow-x-auto rounded-lg border border-border shadow-xs">
-            <table className="w-full text-sm border-collapse">
-                <thead className="bg-muted/70 text-xs text-muted-foreground border-b border-border">
+            <table className="block w-full border-collapse text-sm sm:table">
+                <thead className="hidden border-b border-border bg-muted/70 text-xs text-muted-foreground sm:table-header-group">
                     <tr>
                         <th className="px-2 py-2.5 text-start font-semibold sm:px-3.5">المنتج</th>
                         <th className="px-2 py-2.5 text-center font-semibold sm:px-3.5">الكمية</th>
@@ -173,16 +178,16 @@ function ItemsTable({ items, moneyKey }) {
                         <th className="px-2 py-2.5 text-end font-semibold sm:px-3.5">الإجمالي (ج.م)</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-border/60 bg-card text-card-foreground">
+                <tbody className="block divide-y divide-border/60 bg-card text-card-foreground sm:table-row-group">
                     {(items || []).map((it, i) => (
-                        <tr key={i} className="transition-colors hover:bg-muted/40">
-                            <td className="px-2 py-2.5 text-start font-medium text-foreground sm:px-3.5">
+                        <tr key={i} className="grid grid-cols-[auto_1fr_1fr] gap-x-4 gap-y-1.5 px-3 py-3 transition-colors hover:bg-muted/40 sm:table-row sm:p-0">
+                            <td className="col-span-3 text-start font-medium text-foreground sm:table-cell sm:px-3.5 sm:py-2.5">
                                 {it.productName}
                                 {it.code ? <span className="ms-2 font-mono text-[11px] text-muted-foreground" dir="ltr">{it.code}</span> : null}
                             </td>
-                            <td className="px-2 py-2.5 text-center font-mono text-xs tabular-nums text-muted-foreground sm:px-3.5">{num(it.qty)}</td>
-                            <td className="whitespace-nowrap px-2 py-2.5 text-end font-mono text-xs tabular-nums text-muted-foreground sm:px-3.5">{moneyText(it[moneyKey === 'cost' ? 'cost' : 'price'])}</td>
-                            <td className="whitespace-nowrap px-2 py-2.5 text-end font-mono text-xs font-semibold tabular-nums text-foreground sm:px-3.5">{moneyText(it.total)}</td>
+                            <td data-label="الكمية" className={`font-mono text-xs tabular-nums text-muted-foreground sm:table-cell sm:px-3.5 sm:py-2.5 sm:text-center ${label}`}>{num(it.qty)}</td>
+                            <td data-label="السعر (ج.م)" className={`whitespace-nowrap font-mono text-xs tabular-nums text-muted-foreground sm:table-cell sm:px-3.5 sm:py-2.5 sm:text-end ${label}`}>{moneyText(it[moneyKey === 'cost' ? 'cost' : 'price'])}</td>
+                            <td data-label="الإجمالي (ج.م)" className={`whitespace-nowrap font-mono text-xs font-semibold tabular-nums text-foreground sm:table-cell sm:px-3.5 sm:py-2.5 sm:text-end ${label}`}>{moneyText(it.total)}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -222,7 +227,7 @@ export const SECTION_CONFIGS = {
             { key: 'date', label: 'التاريخ', render: shortDate, mobile: true },
             { key: 'paymentType', label: 'الدفع', render: (v) => PAYMENT_LABELS[v] || v || '—' },
             { key: 'paymentStatus', label: 'السداد', render: (v) => <PaymentStatusBadge status={v} />, mobile: true },
-            { key: 'remaining', label: 'المتبقي', render: owed, align: 'end', numeric: true },
+            { key: 'remaining', label: 'المتبقي', render: owed, align: 'end', numeric: true, mobile: true, mobileLabel: 'متبقي', hideEmptyOnMobile: true, notTrailing: true },
             { key: 'total', label: 'الإجمالي', render: (v) => <Money value={v} className="font-semibold text-foreground" />, align: 'end', numeric: true, mobile: true },
         ],
         renderDetail: (item) => (
@@ -260,7 +265,7 @@ export const SECTION_CONFIGS = {
             { key: 'date', label: 'التاريخ', render: shortDate, mobile: true },
             { key: 'paymentType', label: 'الدفع', render: (v) => PAYMENT_LABELS[v] || v || '—' },
             { key: 'paymentStatus', label: 'السداد', render: (v) => <PaymentStatusBadge status={v} />, mobile: true },
-            { key: 'remaining', label: 'المتبقي', render: owed, align: 'end', numeric: true },
+            { key: 'remaining', label: 'المتبقي', render: owed, align: 'end', numeric: true, mobile: true, mobileLabel: 'متبقي', hideEmptyOnMobile: true, notTrailing: true },
             { key: 'total', label: 'الإجمالي', render: (v) => <Money value={v} className="font-semibold text-foreground" />, align: 'end', numeric: true, mobile: true },
         ],
         renderDetail: (item) => (
